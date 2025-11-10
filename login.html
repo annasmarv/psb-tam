@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://nuuvatfivugzkfwuzlbn.supabase.co;">
+        <title>Login Admin - PSB SMK Tahasus Plus Al Mardliyah</title>
+
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <!-- Supabase JS -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+        <!-- Config & Security -->
+        <script src="public/js/config.js"></script>
+        <script src="public/js/auth.js"></script>
+        <script src="public/js/security.js"></script>
+
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+            * {
+                font-family: "Inter", sans-serif;
+            }
+
+            body {
+                background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+                min-height: 100vh;
+            }
+
+            .login-card {
+                background: linear-gradient(145deg, #1f1f1f 0%, #141414 100%);
+                border: 1px solid #2a2a2a;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            }
+
+            .input-field {
+                background: #0a0a0a;
+                border: 1px solid #2a2a2a;
+                color: #ffffff;
+                transition: all 0.3s ease;
+            }
+
+            .input-field:focus {
+                outline: none;
+                border-color: #4a4a4a;
+                background: #121212;
+                box-shadow: 0 0 0 3px rgba(74, 74, 74, 0.1);
+            }
+
+            .input-field::placeholder {
+                color: #6a6a6a;
+            }
+
+            .btn-login {
+                background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+                color: #ffffff;
+                border: 1px solid #4a4a4a;
+                transition: all 0.3s ease;
+            }
+
+            .btn-login:hover:not(:disabled) {
+                background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
+                transform: translateY(-2px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            }
+
+            .btn-login:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .logo-container {
+                animation: fadeInDown 0.8s ease-out;
+            }
+
+            .form-container {
+                animation: fadeInUp 0.8s ease-out;
+            }
+
+            @keyframes fadeInDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .error-message {
+                background: #2a1a1a;
+                border: 1px solid #4a2a2a;
+                color: #ff6b6b;
+                animation: shake 0.5s ease;
+            }
+
+            @keyframes shake {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                25% {
+                    transform: translateX(-10px);
+                }
+                75% {
+                    transform: translateX(10px);
+                }
+            }
+
+            .loading-spinner {
+                border: 3px solid #2a2a2a;
+                border-top: 3px solid #ffffff;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                animation: spin 0.8s linear infinite;
+                display: inline-block;
+                margin-right: 8px;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+    </head>
+    <body class="flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <!-- Logo & Title -->
+            <div class="logo-container text-center mb-8">
+                <img
+                    src="public/assets/logo.png"
+                    alt="Logo SMK Tahasus Plus Al Mardliyah"
+                    class="w-16 h-16 mx-auto mb-4 object-contain"
+                />
+                <h1 class="text-white text-2xl font-bold mb-2">Admin Login</h1>
+                <p class="text-gray-400 text-sm">
+                    PSB SMK Tahasus Plus Al Mardliyah
+                </p>
+            </div>
+
+            <!-- Login Card -->
+            <div class="form-container login-card rounded-2xl p-8">
+                <!-- Error Message -->
+                <div
+                    id="errorMessage"
+                    class="hidden error-message rounded-lg p-4 mb-6"
+                >
+                    <div class="flex items-start">
+                        <svg
+                            class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+                        <span id="errorText" class="text-sm"></span>
+                    </div>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="space-y-6">
+                    <!-- Email -->
+                    <div>
+                        <label
+                            for="email"
+                            class="block text-gray-300 text-sm font-medium mb-2"
+                        >
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            class="input-field w-full px-4 py-3 rounded-lg"
+                            placeholder="admin@example.com"
+                            required
+                            autocomplete="email"
+                        />
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label
+                            for="password"
+                            class="block text-gray-300 text-sm font-medium mb-2"
+                        >
+                            Password
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="input-field w-full px-4 py-3 rounded-lg pr-12"
+                                placeholder="••••••••"
+                                required
+                                autocomplete="current-password"
+                            />
+                            <button
+                                type="button"
+                                id="togglePassword"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition"
+                            >
+                                <svg
+                                    id="eyeIcon"
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                    />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="flex items-center">
+                        <input
+                            type="checkbox"
+                            id="remember"
+                            name="remember"
+                            class="w-4 h-4 rounded bg-gray-800 border-gray-600 text-gray-400 focus:ring-2 focus:ring-gray-600"
+                        />
+                        <label
+                            for="remember"
+                            class="ml-2 text-sm text-gray-400"
+                        >
+                            Ingat saya
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button
+                        type="submit"
+                        id="loginButton"
+                        class="btn-login w-full py-3 px-4 rounded-lg font-semibold text-sm"
+                    >
+                        Masuk
+                    </button>
+                </form>
+
+                <!-- Footer Info -->
+                <div class="mt-6 pt-6 border-t border-gray-800">
+                    <p class="text-gray-500 text-xs text-center">
+                        Halaman khusus admin. Tidak untuk umum.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Back to Home -->
+            <div class="text-center mt-6">
+                <a
+                    href="index.html"
+                    class="text-gray-400 hover:text-gray-200 text-sm transition inline-flex items-center"
+                >
+                    <svg
+                        class="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                        />
+                    </svg>
+                    Kembali ke Beranda
+                </a>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                "use strict";
+
+                const form = document.getElementById("loginForm");
+                const emailInput = document.getElementById("email");
+                const passwordInput = document.getElementById("password");
+                const loginButton = document.getElementById("loginButton");
+                const errorMessage = document.getElementById("errorMessage");
+                const errorText = document.getElementById("errorText");
+                const togglePassword = document.getElementById("togglePassword");
+
+                // Wait for Supabase auth to be ready
+                async function waitForSupabase() {
+                    for (let i = 0; i < 100; i++) {
+                        // Check for initialized client
+                        if (window.__supabaseClient && typeof window.__supabaseClient.auth === 'object') {
+                            return window.__supabaseClient;
+                        }
+                        
+                        // Try to initialize
+                        if (window.Config && typeof window.Config.initSupabase === 'function') {
+                            const client = window.Config.initSupabase();
+                            if (client && typeof client.auth === 'object') {
+                                return client;
+                            }
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+                    
+                    throw new Error('Supabase tidak siap setelah timeout');
+                }
+
+                // Initialize on load
+                waitForSupabase()
+                    .then(() => {
+                        console.log("[Login] Supabase ready");
+                    })
+                    .catch(err => {
+                        console.error("[Login] Failed to initialize:", err);
+                    });
+
+                // Handle form submission
+                form.addEventListener("submit", async function(e) {
+                    e.preventDefault();
+                    hideError();
+
+                    const email = emailInput.value.trim();
+                    const password = passwordInput.value;
+                    const remember = document.getElementById("remember").checked;
+
+                    // Validate inputs
+                    if (!email || !password) {
+                        showError("Email dan password harus diisi");
+                        return;
+                    }
+
+                    // Show loading state
+                    loginButton.disabled = true;
+                    loginButton.innerHTML = '<div class="loading-spinner"></div> Memproses...';
+
+                    try {
+                        // Wait for Supabase to be ready
+                        const supabase = await waitForSupabase();
+
+                        if (!supabase || typeof supabase.auth.signInWithPassword !== 'function') {
+                            throw new Error('Supabase auth tidak tersedia');
+                        }
+
+                        const { data, error } = await supabase.auth.signInWithPassword({
+                            email,
+                            password
+                        });
+
+                        if (error) {
+                            throw error;
+                        }
+
+                        if (data.user) {
+                            // Save session if remember me is checked
+                            if (remember) {
+                                localStorage.setItem('sb-remember-me', 'true');
+                            }
+                            
+                            console.log("[Login] Login successful, redirecting to dashboard");
+                            // Redirect to dashboard
+                            window.location.href = 'dashboard.html';
+                        }
+                    } catch (error) {
+                        console.error('[Login] Error:', error);
+                        showError(error.message === 'Invalid login credentials'
+                            ? 'Email atau password salah'
+                            : 'Terjadi kesalahan saat login. Silakan coba lagi.');
+                        
+                        // Reset loading state
+                        loginButton.disabled = false;
+                        loginButton.innerHTML = 'Masuk';
+                    }
+                });
+
+                // Toggle password visibility
+                togglePassword.addEventListener("click", function () {
+                    const type = passwordInput.type === "password" ? "text" : "password";
+                    passwordInput.type = type;
+
+                    const eyeIcon = document.getElementById("eyeIcon");
+                    if (type === "text") {
+                        eyeIcon.innerHTML = `
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        `;
+                    } else {
+                        eyeIcon.innerHTML = `
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        `;
+                    }
+                });
+
+                // Show/hide error
+                function showError(message) {
+                    errorText.textContent = message;
+                    errorMessage.classList.remove("hidden");
+                }
+
+                function hideError() {
+                    errorMessage.classList.add("hidden");
+                }
+
+                // Prevent Enter key default on password field during submission
+                passwordInput.addEventListener("keypress", function (e) {
+                    if (e.key === "Enter" && form.checkValidity()) {
+                        form.dispatchEvent(new Event('submit'));
+                    }
+                });
+            })();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,1979 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Form Pendaftaran — PSB SMK Tahasus Plus Al Mardliyah</title>
+        <meta
+            name="description"
+            content="Form pendaftaran online PSB SMK Tahasus Plus Al Mardliyah"
+        />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+        <link rel="stylesheet" href="public/css/style.css">
+        <script src="public/js/config.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <style>
+            :root {
+                --brand-green: #0f9d58;
+                --brand-green-dark: #0b7a43;
+                --brand-gold: #f6c84c;
+                --bg-soft: #f7faf7;
+                --muted: #6b7280;
+            }
+
+            html {
+                font-size: 16px;
+            }
+
+            @media (min-width: 768px) {
+                html {
+                    font-size: 16px;
+                }
+            }
+
+            body {
+                overflow-x: hidden;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+                    "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+
+            .card {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 8px 20px rgba(2, 6, 23, 0.04);
+                padding: 1rem;
+            }
+
+            @media (min-width: 640px) {
+                .card {
+                    border-radius: 14px;
+                    padding: 1.5rem;
+                }
+            }
+
+            @media (min-width: 1024px) {
+                .card {
+                    padding: 2rem;
+                }
+            }
+
+            .input {
+                border-radius: 8px;
+                padding: 0.75rem 0.875rem;
+                border: 1px solid #e6eef0;
+                background: white;
+                box-shadow: 0 2px 8px rgba(2, 6, 23, 0.02);
+                font-size: 1rem;
+                width: 100%;
+                -webkit-appearance: none;
+                appearance: none;
+            }
+
+            @media (min-width: 640px) {
+                .input {
+                    border-radius: 10px;
+                    padding: 0.85rem 1rem;
+                    box-shadow: 0 4px 12px rgba(2, 6, 23, 0.03);
+                }
+            }
+
+            .input:focus {
+                outline: none;
+                border-color: var(--brand-green);
+                box-shadow: 0 4px 16px rgba(15, 157, 88, 0.08);
+            }
+
+            .helper {
+                font-size: 0.8rem;
+                color: var(--muted);
+                line-height: 1.4;
+            }
+
+            @media (min-width: 640px) {
+                .helper {
+                    font-size: 0.85rem;
+                }
+            }
+
+            .invalid {
+                border-color: #ef4444 !important;
+                box-shadow: 0 2px 8px rgba(239, 68, 68, 0.06);
+            }
+
+            .invalid-msg {
+                color: #dc2626;
+                font-size: 0.8rem;
+                display: none;
+                margin-top: 0.375rem;
+            }
+
+            input[type="radio"] {
+                width: 1.125rem;
+                height: 1.125rem;
+                accent-color: var(--brand-green);
+                flex-shrink: 0;
+            }
+
+            .radio-label {
+                display: flex;
+                align-items: center;
+                gap: 0.625rem;
+                padding: 0.75rem;
+                border-radius: 8px;
+                border: 1px solid #e6eef0;
+                background: white;
+                box-shadow: 0 2px 8px rgba(2, 6, 23, 0.02);
+                cursor: pointer;
+                font-size: 0.9rem;
+            }
+
+            @media (min-width: 640px) {
+                .radio-label {
+                    padding: 0.875rem 1rem;
+                    gap: 0.75rem;
+                    border-radius: 10px;
+                    font-size: 1rem;
+                }
+            }
+
+            .radio-label input[type="radio"] {
+                margin: 0;
+            }
+
+            .radio-label.selected {
+                border-color: rgba(15, 157, 88, 0.5);
+                background: linear-gradient(
+                    90deg,
+                    rgba(15, 157, 88, 0.08),
+                    rgba(15, 157, 88, 0.02)
+                );
+            }
+
+            .progress-track {
+                height: 8px;
+                background: #eef2f7;
+                border-radius: 999px;
+                overflow: hidden;
+            }
+
+            @media (min-width: 640px) {
+                .progress-track {
+                    height: 10px;
+                }
+            }
+
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    var(--brand-green),
+                    var(--brand-green-dark)
+                );
+                width: 0%;
+                transition: width 0.36s ease;
+            }
+
+            .step-pill {
+                min-width: 40px;
+                height: 40px;
+                border-radius: 999px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 600;
+                font-size: 0.875rem;
+            }
+
+            @media (min-width: 640px) {
+                .step-pill {
+                    min-width: 44px;
+                    height: 44px;
+                    font-size: 1rem;
+                }
+            }
+
+            .step-pill.inactive {
+                background: #f1f5f9;
+                color: #475569;
+            }
+
+            .step-pill.active {
+                background: var(--brand-green);
+                color: white;
+                box-shadow: 0 4px 16px rgba(15, 157, 88, 0.12);
+            }
+
+            img.brosur {
+                width: 100%;
+                height: auto;
+                border-radius: 8px;
+                border: 1px solid #e6eef0;
+                box-shadow: 0 2px 8px rgba(2, 6, 23, 0.02);
+            }
+
+            @media (min-width: 640px) {
+                img.brosur {
+                    border-radius: 10px;
+                    box-shadow: 0 4px 12px rgba(2, 6, 23, 0.03);
+                }
+            }
+
+            .btn {
+                padding: 0.875rem 1.25rem;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 0.95rem;
+                transition: all 0.2s;
+                width: 100%;
+                touch-action: manipulation;
+            }
+
+            @media (min-width: 640px) {
+                .btn {
+                    padding: 1rem 1.5rem;
+                    border-radius: 10px;
+                    font-size: 1rem;
+                }
+            }
+
+            .grid-cols-2-mobile {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            @media (min-width: 480px) {
+                .grid-cols-2-mobile {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+
+            label {
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+
+            @media (min-width: 640px) {
+                label {
+                    font-size: 1rem;
+                }
+            }
+
+            .space-y-4 > * + * {
+                margin-top: 1rem;
+            }
+
+            @media (min-width: 640px) {
+                .space-y-4 > * + * {
+                    margin-top: 1.25rem;
+                }
+            }
+
+            .program-card {
+                display: block;
+                border-radius: 8px;
+                border: 1.5px solid #e6eef0;
+                padding: 0.875rem;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            @media (min-width: 640px) {
+                .program-card {
+                    border-radius: 10px;
+                    padding: 1rem;
+                }
+            }
+
+            .program-card:active {
+                transform: scale(0.98);
+            }
+
+            .info-box {
+                padding: 0.875rem;
+                border-radius: 8px;
+                font-size: 0.9rem;
+            }
+
+            @media (min-width: 640px) {
+                .info-box {
+                    padding: 1rem;
+                    border-radius: 10px;
+                    font-size: 1rem;
+                }
+            }
+            </style>
+        </noscript>
+        <header
+            class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b"
+            role="banner"
+        >
+            <div
+                class="max-w-3xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2"
+            >
+                <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <img
+                        src="public/assets/logo.png"
+                        alt="Logo SMK Tahasus Plus Al Mardliyah Kaliwungu"
+                        class="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 object-contain"
+                    />
+                    <div class="min-w-0">
+                        <p
+                            class="text-[0.75rem] sm:text-[0.85rem] text-slate-500 truncate"
+                        >
+                            SMK Pusat Keunggulan
+                        </p>
+                        <p class="text-sm sm:text-base font-semibold truncate">
+                            SMK Tahasus Plus Al Mardliyah
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center flex-shrink-0">
+                    <a
+                        href="index.html"
+                        class="text-xs sm:text-sm text-slate-700 font-medium whitespace-nowrap transition-colors hover:text-slate-900"
+                    >
+                        ← Kembali
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+            <article class="card">
+                <header
+                    class="flex items-center justify-between gap-3 flex-wrap mb-4"
+                >
+                    <div class="min-w-0">
+                        <h1
+                            id="sectionTitle"
+                            class="text-lg sm:text-xl font-semibold"
+                        >
+                            Formulir Pendaftaran
+                        </h1>
+                        <p id="sectionSub" class="helper mt-1">
+                            Isi data sesuai dokumen resmi
+                        </p>
+                    </div>
+                    <div
+                        class="text-sm text-slate-500 flex-shrink-0"
+                        id="stepCounter"
+                    >
+                        1 / 5
+                    </div>
+                </header>
+
+                <div class="mt-3 sm:mt-4 mb-6">
+                    <div class="progress-track">
+                        <div
+                            id="progressFill"
+                            class="progress-fill"
+                            style="width: 25%"
+                        ></div>
+                    </div>
+                </div>
+
+                <form
+                    id="PSBForm"
+                    class="mt-4 sm:mt-5 space-y-5 sm:space-y-6"
+                    onsubmit="return false;"
+                    enctype="multipart/form-data"
+                    novalidate
+                >
+                    <section data-step="1" class="step-section">
+                        <div class="space-y-4">
+                            <h2 class="text-base sm:text-lg font-semibold">
+                                Data Diri
+                            </h2>
+                            <div>
+                                <label
+                                    for="nama_lengkap"
+                                    class="block text-sm font-medium mb-1.5"
+                                    >Nama Lengkap</label
+                                >
+                                <input
+                                    id="nama_lengkap"
+                                    name="nama_lengkap"
+                                    type="text"
+                                    class="input"
+                                    placeholder="Isi Nama Sesuai Akta Kelahiran"
+                                    required
+                                    aria-describedby="nama_lengkap_msg"
+                                />
+                                <div id="nama_lengkap_msg" class="invalid-msg">
+                                    Nama lengkap wajib diisi.
+                                </div>
+                            </div>
+
+                            <!-- Gender & Birth Place -->
+                            <div class="grid-cols-2-mobile">
+                                <div>
+                                    <fieldset>
+                                        <legend
+                                            class="block text-sm font-medium mb-1.5"
+                                        >
+                                            Jenis Kelamin
+                                        </legend>
+                                        <div
+                                            class="grid grid-cols-2 gap-2 sm:gap-3"
+                                        >
+                                            <label
+                                                class="radio-label"
+                                                id="label_male"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="jenis_kelamin"
+                                                    value="Laki-laki"
+                                                    checked
+                                                    required
+                                                />
+                                                <span class="font-medium"
+                                                    >Laki-laki</span
+                                                >
+                                            </label>
+                                            <label
+                                                class="radio-label"
+                                                id="label_female"
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    name="jenis_kelamin"
+                                                    value="Perempuan"
+                                                    required
+                                                />
+                                                <span class="font-medium"
+                                                    >Perempuan</span
+                                                >
+                                            </label>
+                                        </div>
+                                        <div
+                                            id="jenis_kelamin_msg"
+                                            class="invalid-msg"
+                                        >
+                                            Jenis kelamin wajib dipilih.
+                                        </div>
+                                    </fieldset>
+                                </div>
+
+                                <div>
+                                    <label
+                                        for="tempat_lahir"
+                                        class="block text-sm font-medium mb-1.5"
+                                        >Tempat Lahir</label
+                                    >
+                                    <input
+                                        id="tempat_lahir"
+                                        name="tempat_lahir"
+                                        type="text"
+                                        class="input"
+                                        placeholder="Kota / Kabupaten"
+                                        required
+                                        aria-describedby="tempat_lahir_msg"
+                                    />
+                                    <div
+                                        id="tempat_lahir_msg"
+                                        class="invalid-msg"
+                                    >
+                                        Tempat lahir wajib diisi.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Birth Date & NIK -->
+                            <div class="grid-cols-2-mobile">
+                                <div>
+                                    <label
+                                        for="tanggal_lahir"
+                                        class="block text-sm font-medium mb-1.5"
+                                        >Tanggal Lahir</label
+                                    >
+                                    <input
+                                        id="tanggal_lahir"
+                                        name="tanggal_lahir"
+                                        type="date"
+                                        class="input"
+                                        required
+                                        aria-describedby="tanggal_lahir_msg"
+                                    />
+                                    <div
+                                        id="tanggal_lahir_msg"
+                                        class="invalid-msg"
+                                    >
+                                        Tanggal lahir wajib diisi.
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label
+                                        for="nik_siswa"
+                                        class="block text-sm font-medium mb-1.5"
+                                        >NIK (16 digit)</label
+                                    >
+                                    <input
+                                        id="nik_siswa"
+                                        name="nik_siswa"
+                                        type="text"
+                                        class="input"
+                                        inputmode="numeric"
+                                        maxlength="16"
+                                        placeholder="16 digit NIK"
+                                        pattern="\d{16}"
+                                        required
+                                        aria-describedby="nik_siswa_msg"
+                                    />
+                                    <div id="nik_siswa_msg" class="invalid-msg">
+                                        NIK wajib 16 digit angka.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Child Order Fields -->
+                            <div class="grid-cols-2-mobile">
+                                <div>
+                                    <label
+                                        for="anak_ke"
+                                        class="block text-sm font-medium mb-1.5"
+                                        >Anak Ke</label
+                                    >
+                                    <input
+                                        id="anak_ke"
+                                        name="anak_ke"
+                                        type="number"
+                                        min="1"
+                                        class="input"
+                                        placeholder="Nomor urutan"
+                                        required
+                                        inputmode="numeric"
+                                        aria-describedby="anak_ke_msg"
+                                    />
+                                    <div id="anak_ke_msg" class="invalid-msg">
+                                        Anak ke wajib diisi (angka).
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label
+                                        for="jumlah_saudara"
+                                        class="block text-sm font-medium mb-1.5"
+                                        >Jumlah Saudara Kandung</label
+                                    >
+                                    <input
+                                        id="jumlah_saudara"
+                                        name="jumlah_saudara"
+                                        type="number"
+                                        min="0"
+                                        class="input"
+                                        placeholder="Total saudara"
+                                        required
+                                        inputmode="numeric"
+                                        aria-describedby="jumlah_saudara_msg"
+                                    />
+                                    <div
+                                        id="jumlah_saudara_msg"
+                                        class="invalid-msg"
+                                    >
+                                        Jumlah saudara wajib diisi (angka).
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Height & Weight -->
+                            <div class="grid-cols-2-mobile">
+                                <div>
+                                    <label
+                                        for="tinggi_badan"
+                                        class="block text-sm font-medium mb-1.5"
+                                        >Tinggi Badan (cm)</label
+                                    >
+                                    <input
+                                        id="tinggi_badan"
+                                        name="tinggi_badan"
+                                        type="number"
+                                        min="0"
+                                        class="input"
+                                        placeholder="... cm"
+                                        required
+                                        aria-describedby="tinggi_badan_msg"
+                                    />
+                                    <div
+                                        id="tinggi_badan_msg"
+                                        class="invalid-msg"
+                                    >
+                                        Tinggi badan wajib diisi (angka).
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label
+                                        for="berat_badan"
+                                        class="block text-sm font-medium mb-1.5"
+                                        >Berat Badan (Kg)</label
+                                    >
+                                    <input
+                                        id="berat_badan"
+                                        name="berat_badan"
+                                        type="number"
+                                        min="0"
+                                        class="input"
+                                        placeholder="... Kg"
+                                        required
+                                        aria-describedby="berat_badan_msg"
+                                    />
+                                    <div
+                                        id="berat_badan_msg"
+                                        class="invalid-msg"
+                                    >
+                                        Berat badan wajib diisi (angka).
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- NISN Field -->
+                            <div>
+                                <label
+                                    for="nisn"
+                                    class="block text-sm font-medium mb-1.5"
+                                    >NISN (10 digit)</label
+                                >
+                                <input
+                                    id="nisn"
+                                    name="nisn"
+                                    type="text"
+                                    class="input"
+                                    inputmode="numeric"
+                                    maxlength="10"
+                                    pattern="\d{10}"
+                                    placeholder="10 digit NISN"
+                                    required
+                                    aria-describedby="nisn_msg"
+                                />
+                                <div id="nisn_msg" class="invalid-msg">
+                                    NISN wajib 10 digit angka.
+                                </div>
+                            </div>
+
+                            <!-- Address Field -->
+                            <div>
+                                <label
+                                    for="alamat_lengkap"
+                                    class="block text-sm font-medium mb-1.5"
+                                    >Alamat Tempat Tinggal</label
+                                >
+                                <textarea
+                                    id="alamat_lengkap"
+                                    name="alamat_lengkap"
+                                    class="input"
+                                    rows="3"
+                                    placeholder="Dukuh/Dusun ............, RT ... RW ..., Desa / Kelurahan .... , Kec. ...., Kab/Kota , ..... Provinsi ....."
+                                    required
+                                    aria-describedby="alamat_lengkap_msg"
+                                ></textarea>
+                                <div
+                                    id="alamat_lengkap_msg"
+                                    class="invalid-msg"
+                                >
+                                    Alamat wajib diisi.
+                                </div>
+                            </div>
+
+                            <!-- School Field -->
+                            <div>
+                                <label
+                                    for="asal_sekolah"
+                                    class="block text-sm font-medium mb-1.5"
+                                    >Asal Sekolah</label
+                                >
+                                <input
+                                    id="asal_sekolah"
+                                    name="asal_sekolah"
+                                    type="text"
+                                    class="input"
+                                    placeholder="SMP/MTs ..."
+                                    required
+                                    aria-describedby="asal_sekolah_msg"
+                                />
+                                <div id="asal_sekolah_msg" class="invalid-msg">
+                                    Asal sekolah wajib diisi.
+                                </div>
+                            </div>
+
+                            <!-- Phone Field -->
+                            <div>
+                                <label
+                                    for="hp"
+                                    class="block text-sm font-medium mb-1.5"
+                                    >Nomor HP atau WA</label
+                                >
+                                <input
+                                    id="hp"
+                                    name="hp"
+                                    type="text"
+                                    class="input"
+                                    inputmode="numeric"
+                                    maxlength="13"
+                                    pattern="\d+"
+                                    placeholder="08xx"
+                                    required
+                                    aria-describedby="hp_msg"
+                                />
+                                <div id="hp_msg" class="invalid-msg">
+                                    Nomor HP/WA wajib diisi (hanya angka).
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section 2: Program Selection -->
+                    <section data-step="2" class="step-section hidden">
+                        <div class="space-y-4">
+                            <h2 class="text-base sm:text-lg font-semibold">
+                                Pilihan Program Keahlian
+                            </h2>
+
+                            <fieldset>
+                                <legend class="sr-only">
+                                    Pilih Program Keahlian
+                                </legend>
+                                <div class="space-y-2.5 sm:space-y-3">
+                                    <label
+                                        class="program-card flex items-start gap-2.5 sm:gap-3"
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="program_utama"
+                                            value="TJKT"
+                                            class="mt-1"
+                                            checked
+                                            required
+                                        />
+                                        <div class="min-w-0 flex-1">
+                                            <span
+                                                class="font-semibold text-sm sm:text-base"
+                                                >TJKT — Teknik Jaringan Komputer
+                                                &amp; Telekomunikasi</span
+                                            >
+                                            <p class="helper mt-0.5">
+                                                Jaringan, konfigurasi perangkat,
+                                                telekomunikasi &amp; sertifikasi
+                                                industri
+                                            </p>
+                                        </div>
+                                    </label>
+
+                                    <label
+                                        class="program-card flex items-start gap-2.5 sm:gap-3"
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="program_utama"
+                                            value="Tata Busana"
+                                            class="mt-1"
+                                            required
+                                        />
+                                        <div class="min-w-0 flex-1">
+                                            <span
+                                                class="font-semibold text-sm sm:text-base"
+                                                >Tata Busana (Fashion)</span
+                                            >
+                                            <p class="helper mt-0.5">
+                                                Desain busana, pola,
+                                                jahit-menjahit
+                                            </p>
+                                        </div>
+                                    </label>
+
+                                    <label
+                                        class="program-card flex items-start gap-2.5 sm:gap-3"
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="program_utama"
+                                            value="Tata Boga"
+                                            class="mt-1"
+                                            required
+                                        />
+                                        <div class="min-w-0 flex-1">
+                                            <span
+                                                class="font-semibold text-sm sm:text-base"
+                                                >Tata Boga (Culinary)</span
+                                            >
+                                            <p class="helper mt-0.5">
+                                                Teknik memasak, kitchen lab,
+                                                food safety
+                                            </p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div id="program_utama_msg" class="invalid-msg">
+                                    Pilih salah satu program keahlian.
+                                </div>
+                            </fieldset>
+
+                            <!-- Program Knowledge Field -->
+                            <div>
+                                <label
+                                    for="pengetahuan_program"
+                                    class="block text-sm font-medium mb-1.5"
+                                >
+                                    Apa Yang Kamu Ketahui Tentang Program
+                                    Keahlian Yang Dipilih?
+                                </label>
+                                <textarea
+                                    id="pengetahuan_program"
+                                    name="pengetahuan_program"
+                                    class="input"
+                                    rows="5"
+                                    placeholder="Tuliskan pengetahuan singkat tentang program"
+                                    required
+                                    aria-describedby="pengetahuan_program_msg"
+                                ></textarea>
+                                <div
+                                    id="pengetahuan_program_msg"
+                                    class="invalid-msg"
+                                >
+                                    Field ini wajib diisi.
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section 3: Parent Data -->
+                    <section data-step="3" class="step-section hidden">
+                        <div class="space-y-4">
+                            <h2 class="text-base sm:text-lg font-semibold">
+                                Data Orang Tua / Wali
+                            </h2>
+                            <p class="helper">
+                                KK &amp; NIK wajib 16 digit angka.
+                            </p>
+
+                            <!-- Family Card Field -->
+                            <div>
+                                <label
+                                    for="no_kk"
+                                    class="block text-sm font-medium mb-1.5"
+                                    >Nomor KK (Kartu Keluarga)</label
+                                >
+                                <input
+                                    id="no_kk"
+                                    name="no_kk"
+                                    type="text"
+                                    class="input"
+                                    inputmode="numeric"
+                                    maxlength="16"
+                                    pattern="\d{16}"
+                                    placeholder="16 digit Nomor KK"
+                                    required
+                                    aria-describedby="no_kk_msg"
+                                />
+                                <div id="no_kk_msg" class="invalid-msg">
+                                    Nomor KK wajib 16 digit angka.
+                                </div>
+                            </div>
+
+                            <!-- Father's Name Field -->
+                            <div>
+                                <label
+                                    for="nama_ayah"
+                                    class="block text-sm font-medium mb-1.5"
+                                    >Nama Lengkap Ayah / Wali</label
+                                >
+                                <input
+                                    id="nama_ayah"
+                                    name="nama_ayah"
+                                    type="text"
+                                    class="input"
+                                    placeholder="Nama Ayah / Wali"
+                                    required
+                                    aria-describedby="nama_ayah_msg"
+                                />
+                                <div id="nama_ayah_msg" class="invalid-msg">
+                                    Nama ayah/wali wajib diisi.
+                                </div>
+                            </div>
+
+                            <!-- Father's NIK Field -->
+                            <div>
+                                <label
+                                    for="nik_ayah"
+                                    class="block text-sm font-medium mb-1.5"
+                                    >NIK Ayah / Wali</label
+                                >
+                                <input
+                                    id="nik_ayah"
+                                    name="nik_ayah"
+                                    type="text"
+                                    class="input"
+                                    inputmode="numeric"
+                                    maxlength="16"
+                                    pattern="\d{16}"
+                                    placeholder="16 digit NIK Ayah"
+                                    aria-describedby="nik_ayah_msg"
+                                />
+                                <div id="nik_ayah_msg" class="invalid-msg">
+                                    NIK Ayah wajib 16 digit angka.
+                                </div>
+                            </div>
+
+                            <!-- Mother's Name Field -->
+                            <div>
+                                <label
+                                    for="nama_ibu"
+                                    class="block text-sm font-medium mb-1.5"
+                                    >Nama Lengkap Ibu / Wali</label
+                                >
+                                <input
+                                    id="nama_ibu"
+                                    name="nama_ibu"
+                                    type="text"
+                                    class="input"
+                                    placeholder="Nama Ibu / Wali"
+                                    required
+                                    aria-describedby="nama_ibu_msg"
+                                />
+                                <div id="nama_ibu_msg" class="invalid-msg">
+                                    Nama ibu/wali wajib diisi.
+                                </div>
+                            </div>
+
+                            <!-- Mother's NIK Field -->
+                            <div>
+                                <label
+                                    for="nik_ibu"
+                                    class="block text-sm font-medium mb-1.5"
+                                    >NIK Ibu / Wali</label
+                                >
+                                <input
+                                    id="nik_ibu"
+                                    name="nik_ibu"
+                                    type="text"
+                                    class="input"
+                                    inputmode="numeric"
+                                    maxlength="16"
+                                    pattern="\d{16}"
+                                    placeholder="16 digit NIK Ibu"
+                                    aria-describedby="nik_ibu_msg"
+                                />
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section 4: Upload Documents (Optional) -->
+                    <section data-step="4" class="step-section hidden">
+                        <div class="space-y-4">
+                            <h2 class="text-base sm:text-lg font-semibold">
+                                Upload Berkas (Opsional)
+                            </h2>
+                            <p class="helper text-slate-600">
+                                Upload berkas pendukung di bawah ini. Semua berkas bersifat <strong>opsional</strong> dan dapat dilengkapi nanti. Format file yang didukung: JPG, PNG, PDF (Maks. 2MB per file)
+                            </p>
+
+                            <!-- Akta Kelahiran -->
+                            <div>
+                                <label
+                                    for="file_akta"
+                                    class="block text-sm font-medium mb-1.5"
+                                >
+                                    Akta Kelahiran <span class="text-slate-400 font-normal">(opsional)</span>
+                                </label>
+                                <div class="flex items-center gap-3">
+                                    <label class="flex-1 cursor-pointer">
+                                        <input
+                                            type="file"
+                                            id="file_akta"
+                                            name="file_akta"
+                                            accept="image/jpeg,image/png,application/pdf"
+                                            class="hidden"
+                                        />
+                                        <div class="input flex items-center justify-between hover:border-green-400 transition-colors">
+                                            <span id="file_akta_name" class="text-slate-500 truncate">Pilih file...</span>
+                                            <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div id="file_akta_msg" class="helper mt-1.5 text-slate-500"></div>
+                            </div>
+
+                            <!-- Kartu Keluarga (KK) -->
+                            <div>
+                                <label
+                                    for="file_kk"
+                                    class="block text-sm font-medium mb-1.5"
+                                >
+                                    Kartu Keluarga (KK) <span class="text-slate-400 font-normal">(opsional)</span>
+                                </label>
+                                <div class="flex items-center gap-3">
+                                    <label class="flex-1 cursor-pointer">
+                                        <input
+                                            type="file"
+                                            id="file_kk"
+                                            name="file_kk"
+                                            accept="image/jpeg,image/png,application/pdf"
+                                            class="hidden"
+                                        />
+                                        <div class="input flex items-center justify-between hover:border-green-400 transition-colors">
+                                            <span id="file_kk_name" class="text-slate-500 truncate">Pilih file...</span>
+                                            <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div id="file_kk_msg" class="helper mt-1.5 text-slate-500"></div>
+                            </div>
+
+                            <!-- KTP Orang Tua/Wali -->
+                            <div>
+                                <label
+                                    for="file_ktp_ortu"
+                                    class="block text-sm font-medium mb-1.5"
+                                >
+                                    KTP Orang Tua/Wali <span class="text-slate-400 font-normal">(opsional)</span>
+                                </label>
+                                <div class="flex items-center gap-3">
+                                    <label class="flex-1 cursor-pointer">
+                                        <input
+                                            type="file"
+                                            id="file_ktp_ortu"
+                                            name="file_ktp_ortu"
+                                            accept="image/jpeg,image/png,application/pdf"
+                                            class="hidden"
+                                        />
+                                        <div class="input flex items-center justify-between hover:border-green-400 transition-colors">
+                                            <span id="file_ktp_ortu_name" class="text-slate-500 truncate">Pilih file...</span>
+                                            <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div id="file_ktp_ortu_msg" class="helper mt-1.5 text-slate-500"></div>
+                            </div>
+
+                            <!-- Info Box -->
+                            <aside class="info-box bg-blue-50 border-l-4 border-blue-400 mt-4">
+                                <p class="text-sm text-slate-700">
+                                    <strong>💡 Tips:</strong> Pastikan foto dokumen jelas dan mudah dibaca. Jika belum memiliki file saat ini, Anda dapat melengkapinya nanti.
+                                </p>
+                            </aside>
+                        </div>
+                    </section>
+
+                    <!-- Section 5: Summary & Submission -->
+                    <section data-step="5" class="step-section hidden">
+                        <div class="space-y-4">
+                            <h2 class="text-base sm:text-lg font-semibold">
+                                Informasi Umum &amp; Konfirmasi
+                            </h2>
+
+                            <!-- Info Box -->
+                            <aside
+                                class="info-box bg-emerald-50 border-l-4 border-emerald-400"
+                            >
+                                <h3 class="font-semibold text-sm sm:text-base">
+                                    Terima kasih sudah melakukan pendaftaran
+                                </h3>
+                                <ol
+                                    class="list-decimal list-inside mt-2 text-slate-700 space-y-1.5 text-sm sm:text-base"
+                                >
+                                    <li>
+                                        Seluruh persyaratan dikirimkan via
+                                        WhatsApp berupa gambar/foto ke nomor
+                                        yang tercantum di bawah. (Pastikan
+                                        tulisan dapat terbaca dengan jelas.)
+                                    </li>
+                                    <li class="mt-2">
+                                        Silahkan konfirmasi ke nomor WhatsApp:
+                                        <div class="mt-2 ml-4">
+                                            <p class="font-medium">
+                                                085 700 348 460
+                                            </p>
+                                            <p class="text-sm text-slate-600">
+                                                Ust. Sigit Wagiyanto, S.Kom
+                                            </p>
+                                            <p class="font-medium mt-2">
+                                                085 350 592 595
+                                            </p>
+                                            <p class="text-sm text-slate-600">
+                                                Ust. Misbakhul Munir, S.Pd
+                                            </p>
+                                        </div>
+                                    </li>
+                                    <li class="mt-2">
+                                        Pendaftaran Gelombang:
+                                        <ul
+                                            class="list-disc list-inside mt-1 ml-4 text-slate-600 space-y-0.5"
+                                        >
+                                            <li>
+                                                Gelombang I: 1 November 2025 -
+                                                19 April 2026
+                                            </li>
+                                            <li>
+                                                Gelombang II: 20 April - 21 Juni
+                                                2026
+                                            </li>
+                                            <li>
+                                                Gelombang III: 21 Juni - 12 Juli
+                                                2026
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                            </aside>
+
+                            <!-- Brochure Image -->
+                            <figure>
+                                <figcaption class="text-sm font-medium mb-2">
+                                    Brosur PSB (lihat gambar)
+                                </figcaption>
+                                <img
+                                    class="brosur"
+                                    src="https://lh7-rt.googleusercontent.com/formsz/AN7BsVC0uCNDQGBEL6d5L_2u9jgvq9WsdhJmPIqYYT1aaFDZtmStA9di3jsoxvx4OhYm9U2WzNQEvFck0YfNtgf80PC1oHUjw_81MOvv25KLBHRmbeVkTs13Skb0OaMIaQWCCVZzb6Tdba6tA5DpKL3GjD0qUNlCyCDE4XKZrCnVOIrCPQW4NQrkXDRVCEJSrExERUXsJI8dviBr_RbT=w740?key=x0hiW7VOPJgs753QeMAjCQ"
+                                    alt="Brosur Penerimaan Siswa Baru 2025"
+                                />
+                            </figure>
+
+                            <!-- Submit Button -->
+                            <div>
+                                <button
+                                    id="submitBtn"
+                                    type="button"
+                                    class="btn"
+                                    style="
+                                        background: var(--brand-green);
+                                        color: white;
+                                    "
+                                >
+                                    Kirim Pendaftaran
+                                </button>
+                            </div>
+
+                            <!-- Success Message -->
+                            <div id="afterSubmit" class="mt-4 hidden">
+                                <aside
+                                    class="info-box bg-white border-l-4 border-yellow-400"
+                                >
+                                    <h3
+                                        class="font-semibold text-base sm:text-lg"
+                                    >
+                                        Instruksi Selanjutnya
+                                    </h3>
+                                    <p
+                                        class="mt-2 text-slate-700 text-sm sm:text-base"
+                                    >
+                                        Setelah mengirim, kirim foto/scan
+                                        persyaratan via WhatsApp ke nomor yang
+                                        tercantum di atas. Nomor registrasi Anda
+                                        akan ditampilkan setelah pengiriman.
+                                        Simpan nomor tersebut untuk konfirmasi.
+                                    </p>
+                                    <p
+                                        class="mt-3 font-mono text-sm sm:text-base text-[var(--brand-green)]"
+                                        id="regNumber"
+                                    ></p>
+                                    <div class="mt-3">
+                                        <button
+                                            id="printFormBtn"
+                                            type="button"
+                                            class="btn bg-white border border-emerald-400 text-emerald-600 hover:bg-emerald-50 w-full sm:w-auto"
+                                            style="max-width:280px"
+                                        >Cetak Formulir</button>
+                                    </div>
+                                </aside>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex gap-2 sm:gap-3 mt-6">
+                        <button
+                            type="button"
+                            id="prevBtn"
+                            class="btn flex-1 bg-white border border-slate-300 text-slate-700 hidden transition-all hover:bg-slate-50"
+                        >
+                            ← Sebelumnya
+                        </button>
+                        <button
+                            type="button"
+                            id="nextBtn"
+                            class="btn flex-1 transition-all hover:shadow-md"
+                            style="background: var(--brand-green); color: white"
+                        >
+                            Berikutnya →
+                        </button>
+                    </div>
+                </form>
+            </article>
+        </main>
+
+        <script>
+            (function () {
+                // Multi-step form with validation
+                const steps = Array.from(
+                    document.querySelectorAll(".step-section"),
+                );
+                const total = steps.length;
+                let current = 0;
+
+                const prevBtn = document.getElementById("prevBtn");
+                const nextBtn = document.getElementById("nextBtn");
+                const stepCounter = document.getElementById("stepCounter");
+                const progressFill = document.getElementById("progressFill");
+                const pills = [
+                    document.getElementById("pill1"),
+                    document.getElementById("pill2"),
+                    document.getElementById("pill3"),
+                    document.getElementById("pill4"),
+                    document.getElementById("pill5"),
+                ];
+
+                // Radio label highlighting
+                const radioLabels = document.querySelectorAll(".radio-label");
+                radioLabels.forEach((label) => {
+                    const input = label.querySelector('input[type="radio"]');
+                    if (input.checked) label.classList.add("selected");
+                    input.addEventListener("change", () => {
+                        const name = input.name;
+                        document
+                            .querySelectorAll(`input[name="${name}"]`)
+                            .forEach((r) => {
+                                r.closest(".radio-label")?.classList.remove(
+                                    "selected",
+                                );
+                            });
+                        label.classList.add("selected");
+                    });
+                });
+
+                function updateHeader(index) {
+                    const sectionSub = document.getElementById("sectionSub");
+                    sectionSub.textContent =
+                        index === 0 ? "Isi data sesuai dokumen resmi" : "";
+                    stepCounter.textContent = `${index + 1} / ${total}`;
+
+                    const pct = Math.round(((index + 1) / total) * 100);
+                    progressFill.style.width = pct + "%";
+
+                    pills.forEach((p, i) => {
+                        if (!p) return;
+                        p.classList.toggle("active", i === index);
+                        p.classList.toggle("inactive", i !== index);
+                    });
+
+                    prevBtn.classList.toggle("hidden", index === 0);
+
+                    // Hide next button on last step (submit button is shown separately)
+                    if (index === total - 1) {
+                        nextBtn.classList.add("hidden");
+                    } else {
+                        nextBtn.classList.remove("hidden");
+                        nextBtn.textContent = "Berikutnya →";
+                        nextBtn.style.background = "var(--brand-green)";
+                        nextBtn.style.color = "#fff";
+                    }
+                }
+
+                function showStep(i) {
+                    steps.forEach((s, idx) =>
+                        s.classList.toggle("hidden", idx !== i),
+                    );
+                    current = i;
+                    updateHeader(i);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+
+                prevBtn.addEventListener("click", () => {
+                    if (current > 0) showStep(current - 1);
+                });
+
+                function validateStep(i) {
+                    const step = steps[i];
+                    const fields = Array.from(
+                        step.querySelectorAll("input, select, textarea"),
+                    );
+                    const radioNames = new Set();
+                    let valid = true;
+
+                    step.querySelectorAll(".invalid-msg").forEach(
+                        (m) => (m.style.display = "none"),
+                    );
+                    step.querySelectorAll(".invalid").forEach((el) =>
+                        el.classList.remove("invalid"),
+                    );
+
+                    for (const f of fields) {
+                        if (f.type === "hidden" || f.disabled) continue;
+
+                        if (f.type === "radio") {
+                            if (radioNames.has(f.name)) continue;
+                            radioNames.add(f.name);
+                            const checked = step.querySelector(
+                                `input[name="${f.name}"]:checked`,
+                            );
+                            if (f.required && !checked) {
+                                valid = false;
+                                const msg = step.querySelector(
+                                    `#${f.name}_msg`,
+                                );
+                                if (msg) msg.style.display = "block";
+                            }
+                            continue;
+                        }
+
+                        if (!f.checkValidity()) {
+                            valid = false;
+                            f.classList.add("invalid");
+                            const msg =
+                                f.parentElement.querySelector(".invalid-msg");
+                            if (msg) msg.style.display = "block";
+                            continue;
+                        }
+
+                        if (["nik_siswa", "no_kk"].includes(f.name)) {
+                            if (!/^\d{16}$/.test(f.value.trim())) {
+                                valid = false;
+                                f.classList.add("invalid");
+                                const msg = document.getElementById(
+                                    `${f.name}_msg`,
+                                );
+                                if (msg) msg.style.display = "block";
+                            }
+                        }
+
+                        if (f.name === "nisn") {
+                            if (!/^\d{10}$/.test(f.value.trim())) {
+                                valid = false;
+                                f.classList.add("invalid");
+                                const msg = document.getElementById("nisn_msg");
+                                if (msg) msg.style.display = "block";
+                            }
+                        }
+                    }
+
+                    return valid;
+                }
+
+                nextBtn.addEventListener("click", () => {
+                    if (!validateStep(current)) return;
+
+                    if (current < total - 1) {
+                        showStep(current + 1);
+                    } else {
+                        document.getElementById("submitBtn").scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                        });
+                    }
+                });
+
+                function numericOnly(el, maxLen) {
+                    el.addEventListener("input", () => {
+                        const cleaned = el.value
+                            .replace(/\D/g, "")
+                            .slice(0, maxLen);
+                        if (el.value !== cleaned) el.value = cleaned;
+                    });
+                }
+
+                [
+                    ["nik_siswa", 16],
+                    ["no_kk", 16],
+                    ["nik_ayah", 16],
+                    ["nik_ibu", 16],
+                    ["nisn", 10],
+                    ["hp", 13],
+                ].forEach(([id, len]) => {
+                    const el = document.getElementById(id);
+                    if (el) numericOnly(el, len);
+                });
+
+                function attachValidator(id, pattern, msgId) {
+                    const el = document.getElementById(id);
+                    const msg = document.getElementById(msgId);
+                    if (!el || !msg) return;
+                    el.addEventListener("input", () => {
+                        if (el.value.trim() === "") {
+                            msg.style.display = "none";
+                            el.classList.remove("invalid");
+                            return;
+                        }
+                        if (pattern.test(el.value.trim())) {
+                            msg.style.display = "none";
+                            el.classList.remove("invalid");
+                        } else {
+                            msg.style.display = "block";
+                            el.classList.add("invalid");
+                        }
+                    });
+                }
+
+                attachValidator("nik_siswa", /^\d{16}$/, "nik_siswa_msg");
+                attachValidator("no_kk", /^\d{16}$/, "no_kk_msg");
+                attachValidator("nisn", /^\d{10}$/, "nisn_msg");
+                attachValidator("hp", /^\d+$/, "hp_msg");
+
+                const submitBtn = document.getElementById("submitBtn");
+                const afterSubmit = document.getElementById("afterSubmit");
+                const regNumberEl = document.getElementById("regNumber");
+
+                // ============ localStorage Support ============
+                const STORAGE_KEY = "psb_form_data";
+
+                // Collect form data
+                function getFormData() {
+                    const formData = {};
+                    const form = document.getElementById("PSBForm");
+                    const inputs = form.querySelectorAll(
+                        "input, textarea, select",
+                    );
+
+                    inputs.forEach((input) => {
+                        if (input.type === "radio") {
+                            if (input.checked)
+                                formData[input.name] = input.value;
+                        } else if (input.type !== "hidden") {
+                            formData[input.name] = input.value;
+                        }
+                    });
+
+                    return formData;
+                }
+
+                // Restore form data from localStorage
+                function restoreFormData() {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (!saved) return;
+
+                    try {
+                        const data = JSON.parse(saved);
+                        const form = document.getElementById("PSBForm");
+
+                        Object.entries(data).forEach(([name, value]) => {
+                            const input = form.querySelector(
+                                `[name="${name}"]`,
+                            );
+                            if (!input) return;
+
+                            if (input.type === "radio") {
+                                const radio = form.querySelector(
+                                    `[name="${name}"][value="${value}"]`,
+                                );
+                                if (radio) {
+                                    radio.checked = true;
+                                    const label = radio.closest(".radio-label");
+                                    if (label) label.classList.add("selected");
+                                }
+                            } else {
+                                input.value = value;
+                            }
+                        });
+                    } catch (e) {
+                        // Silent fail - data not critical
+                    }
+                }
+
+                // Auto-save form to localStorage
+                function autoSaveForm() {
+                    const formData = getFormData();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+                }
+
+                // Setup auto-save listeners
+                document
+                    .getElementById("PSBForm")
+                    .addEventListener("input", autoSaveForm);
+                document
+                    .getElementById("PSBForm")
+                    .addEventListener("change", autoSaveForm);
+
+                // Clear localStorage
+                function clearFormStorage() {
+                    localStorage.removeItem(STORAGE_KEY);
+                }
+
+                let supabase = null;
+                let activeWave = null;
+
+                // Initialize Supabase and get active wave
+                async function initSupabase() {
+                    try {
+                        const SUPABASE_URL = window.Config ? window.Config.get("SUPABASE_URL") : null;
+                        const SUPABASE_KEY = window.Config ? window.Config.get("SUPABASE_ANON_KEY") : null;
+
+                        // Development-friendly: read raw local override (no console output in production)
+                        let localOverride = null;
+                        try {
+                            localOverride = JSON.parse(
+                                localStorage.getItem("supabase_config") ||
+                                    "null",
+                            );
+                        } catch (_) {}
+
+                        // If missing config: in development, allow soft fallback; in production, show alert
+                        const missingConfig = !SUPABASE_URL || !SUPABASE_KEY;
+                        if (missingConfig) {
+                            // Allow fallback mode
+
+                            // Provide a dev-active wave so UI and validation continue to work
+                            const now = new Date();
+                            const start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                            const end = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                            activeWave = {
+                                tahun_pelajaran: "DEV",
+                                gelombang: "DEV",
+                                tanggal_mulai: start.toISOString(),
+                                tanggal_selesai: end.toISOString(),
+                            };
+
+                            // Show info banner + CTA to setup config
+                            showActiveWaveInfo();
+                            insertConfigWarningBanner();
+                            return;
+                        }
+
+                        // Try to get client from initialized Supabase
+                        supabase = window.__supabaseClient;
+                        if (!supabase || typeof supabase.from !== 'function') {
+                            // Wait for Supabase to be ready
+                            let attempts = 0;
+                            while (attempts < 100) {
+                                // Check for initialized client
+                                if (window.__supabaseClient && typeof window.__supabaseClient.from === 'function') {
+                                    supabase = window.__supabaseClient;
+                                    break;
+                                }
+
+                                // Try to initialize
+                                if (window.Config && typeof window.Config.initSupabase === 'function') {
+                                    const client = window.Config.initSupabase();
+                                    if (client && typeof client.from === 'function') {
+                                        supabase = client;
+                                        break;
+                                    }
+                                }
+
+                                await new Promise(resolve => setTimeout(resolve, 50));
+                                attempts++;
+                            }
+                        }
+
+                        if (!supabase || typeof supabase.from !== 'function') {
+                            alert("Gagal terhubung ke database. Silakan refresh halaman.");
+                            insertConfigWarningBanner();
+                            return;
+                        }
+
+                        // Get active wave
+                        const { data, error } = await supabase
+                                    .from("pengaturan_psb")
+                                    .select("*")
+                                    .eq("is_active", true)
+                                    .single();
+
+                                if (data && !error) {
+                                    activeWave = data;
+                                    showActiveWaveInfo();
+                                }
+                    } catch (e) {
+                        console.error("Failed to initialize Supabase:", e);
+                        alert("Gagal menginisialisasi koneksi database.");
+                    }
+                }
+
+                // Insert a non-blocking warning banner guiding to setup-config
+                function insertConfigWarningBanner() {
+                    const banner = document.createElement("div");
+                    banner.className =
+                        "bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4 rounded";
+                    banner.innerHTML = `
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">⚠️</div>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-800">
+                                    Supabase belum terkonfigurasi. Untuk development, Anda bisa menyetel <em>Project URL</em> dan <em>Anon Key</em> via Local Storage menggunakan halaman Setup.
+                                </p>
+                                <p class="mt-2">
+                                    <a href="/public/setup-config.html" class="inline-block px-3 py-1.5 rounded text-sm font-semibold text-white" style="background: var(--brand-green)">Buka Setup Konfigurasi</a>
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    const form = document.getElementById("PSBForm");
+                    if (form) form.parentElement?.insertBefore(banner, form);
+                }
+
+                // Show active wave info
+                function showActiveWaveInfo() {
+                    if (!activeWave) return;
+
+                    const today = new Date();
+                    const start = new Date(activeWave.tanggal_mulai);
+                    const end = new Date(activeWave.tanggal_selesai);
+
+                    let status = "Pendaftaran Belum Dibuka";
+                    let statusColor = "text-red-600";
+
+                    if (today >= start && today <= end) {
+                        status = "Pendaftaran Dibuka";
+                        statusColor = "text-green-600";
+                    } else if (today > end) {
+                        status = "Pendaftaran Ditutup";
+                        statusColor = "text-gray-600";
+                    }
+
+                    // Create info banner
+                    const infoBanner = document.createElement("div");
+                    infoBanner.className = "bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded";
+                    infoBanner.innerHTML = `
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <p class="text-sm font-medium text-blue-800">
+                                    Tahun Pelajaran: <strong>${activeWave.tahun_pelajaran}</strong> - Gelombang ${activeWave.gelombang}
+                                </p>
+                                <p class="mt-1 text-sm text-blue-700">
+                                    Periode: ${new Date(activeWave.tanggal_mulai).toLocaleDateString('id-ID')} - ${new Date(activeWave.tanggal_selesai).toLocaleDateString('id-ID')}
+                                </p>
+                                <p class="mt-1 text-sm font-semibold ${statusColor}">
+                                    ${status}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+
+                    // Insert banner before form
+                    const form = document.getElementById("PSBForm");
+                    if (form) {
+                        form.insertBefore(infoBanner, form.firstChild);
+                    }
+                }
+
+                // Initialize on page load
+                initSupabase();
+
+                // File upload handlers
+                const fileInputs = ['file_akta', 'file_kk', 'file_ktp_ortu'];
+                const uploadedFiles = {};
+
+                fileInputs.forEach(fileId => {
+                    const input = document.getElementById(fileId);
+                    const nameSpan = document.getElementById(`${fileId}_name`);
+                    const msgDiv = document.getElementById(`${fileId}_msg`);
+
+                    if (!input) return;
+
+                    input.addEventListener('change', function(e) {
+                        const file = e.target.files[0];
+
+                        if (!file) {
+                            nameSpan.textContent = 'Pilih file...';
+                            nameSpan.classList.remove('text-green-600', 'font-medium');
+                            nameSpan.classList.add('text-slate-500');
+                            msgDiv.textContent = '';
+                            msgDiv.classList.remove('text-red-600', 'text-green-600');
+                            delete uploadedFiles[fileId];
+                            return;
+                        }
+
+                        // Validate file type
+                        const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                        if (!validTypes.includes(file.type)) {
+                            msgDiv.textContent = '❌ Format file tidak valid. Gunakan JPG, PNG, atau PDF';
+                            msgDiv.classList.add('text-red-600');
+                            msgDiv.classList.remove('text-green-600');
+                            input.value = '';
+                            nameSpan.textContent = 'Pilih file...';
+                            nameSpan.classList.remove('text-green-600', 'font-medium');
+                            nameSpan.classList.add('text-slate-500');
+                            delete uploadedFiles[fileId];
+                            return;
+                        }
+
+                        // Validate file size (2MB max)
+                        const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+                        if (file.size > maxSize) {
+                            msgDiv.textContent = '❌ Ukuran file terlalu besar. Maksimal 2MB';
+                            msgDiv.classList.add('text-red-600');
+                            msgDiv.classList.remove('text-green-600');
+                            input.value = '';
+                            nameSpan.textContent = 'Pilih file...';
+                            nameSpan.classList.remove('text-green-600', 'font-medium');
+                            nameSpan.classList.add('text-slate-500');
+                            delete uploadedFiles[fileId];
+                            return;
+                        }
+
+                        // File is valid
+                        nameSpan.textContent = file.name;
+                        nameSpan.classList.remove('text-slate-500');
+                        nameSpan.classList.add('text-green-600', 'font-medium');
+
+                        const fileSizeKB = (file.size / 1024).toFixed(1);
+                        msgDiv.textContent = `✓ ${fileSizeKB} KB - Siap diupload`;
+                        msgDiv.classList.remove('text-red-600');
+                        msgDiv.classList.add('text-green-600');
+
+                        // Store file for upload
+                        uploadedFiles[fileId] = file;
+                    });
+                });
+
+                // Function to upload files to Supabase Storage
+                async function uploadFilesToStorage(registrationNumber) {
+                    const uploadResults = {};
+
+                    if (!supabase) {
+                        return uploadResults;
+                    }
+
+                    for (const [fileId, file] of Object.entries(uploadedFiles)) {
+                        if (!file) continue;
+
+                        try {
+                            // Create unique filename with registration number
+                            const fileExt = file.name.split('.').pop();
+                            const fileName = `${registrationNumber}_${fileId}.${fileExt}`;
+                            const filePath = `registrasi/${fileName}`;
+
+                            // Upload to Supabase Storage
+                            const { data, error } = await supabase.storage
+                                .from('psb-document')
+                                .upload(filePath, file, {
+                                    cacheControl: '3600',
+                                    upsert: false
+                                });
+
+                            if (error) {
+                                continue;
+                            }
+
+                            // Get public URL
+                            const { data: urlData } = supabase.storage
+                                .from('psb-document')
+                                .getPublicUrl(filePath);
+
+                            uploadResults[fileId] = urlData.publicUrl;
+                        } catch (err) {
+                        }
+                    }
+
+                    return uploadResults;
+                }
+
+                const printFormBtn = document.getElementById("printFormBtn");
+                if (printFormBtn) {
+                    // Open printable HTML template and pass form data via sessionStorage
+                    printFormBtn.addEventListener("click", () => {
+                        try {
+                            const payload = window.__lastRegistrationPayload ? { ...window.__lastRegistrationPayload } : {};
+                            const form = document.getElementById('PSBForm');
+                            if (form) {
+                                const elements = form.querySelectorAll('input[name], textarea[name], select[name]');
+                                elements.forEach(el => {
+                                    const name = el.name;
+                                    if (!name) return;
+                                    if (el.type === 'radio') {
+                                        const checked = form.querySelector(`input[name="${name}"]:checked`);
+                                        if (checked) payload[name] = checked.value;
+                                    } else if (el.type === 'checkbox') {
+                                        const checkedBoxes = form.querySelectorAll(`input[name="${name}"]:checked`);
+                                        payload[name] = Array.from(checkedBoxes).map(c=>c.value).join(', ');
+                                    } else if (el.type === 'file') {
+                                        // use file name if selected, otherwise leave to payload (uploaded URL)
+                                        if (el.files && el.files.length) payload[name] = el.files[0].name;
+                                    } else {
+                                        payload[name] = el.value;
+                                    }
+                                });
+                            }
+
+                            // Include standard extras if present in window activeWave
+                            if (typeof activeWave !== 'undefined' && activeWave) {
+                                payload.tahun_pelajaran = payload.tahun_pelajaran || activeWave.tahun_pelajaran || '';
+                                payload.gelombang = payload.gelombang || activeWave.gelombang || '';
+                            }
+
+                            // Store to sessionStorage and open template
+                            sessionStorage.setItem('psb_print_payload', JSON.stringify(payload));
+                            const w = window.open('print-template.html', '_blank');
+                            if (!w) alert('Pop-up diblokir. Izinkan pop-up untuk mencetak.');
+                        } catch (e) {
+                            alert('Terjadi kesalahan saat menyiapkan halaman cetak.');
+                        }
+                    });
+                }
+
+                submitBtn.addEventListener("click", async () => {
+                    for (let i = 0; i < total; i++) {
+                        if (!validateStep(i)) {
+                            showStep(i);
+                            return;
+                        }
+                    }
+
+                    // Check if registration is open
+                    if (!activeWave) {
+                        alert("Tidak ada gelombang pendaftaran yang aktif. Silakan hubungi administrator.");
+                        return;
+                    }
+
+                    const today = new Date();
+                    const start = new Date(activeWave.tanggal_mulai);
+                    const end = new Date(activeWave.tanggal_selesai);
+
+                    if (today < start) {
+                        alert(`Pendaftaran belum dibuka. Pendaftaran akan dibuka mulai ${start.toLocaleDateString('id-ID')}`);
+                        return;
+                    }
+
+                    if (today > end) {
+                        alert(`Pendaftaran sudah ditutup. Pendaftaran ditutup pada ${end.toLocaleDateString('id-ID')}`);
+                        return;
+                    }
+
+                    // Generate registration number
+                    const regNo = "PSB" + Date.now().toString().slice(-8);
+
+                    // Get raw form data (may contain fields that don't exist in DB)
+                    const formData = getFormData();
+                    formData.nomor_registrasi = regNo;
+
+                    // Normalize gelombang to integer if possible
+                    const gelombangInt = (activeWave && activeWave.gelombang !== undefined)
+                        ? (typeof activeWave.gelombang === 'string' ? parseInt(activeWave.gelombang, 10) : activeWave.gelombang)
+                        : null;
+
+                    // Build payload ONLY with expected DB columns (avoid unknown-column errors)
+                    // NOTE: Schema (migration-tables.sql) requires these NOT NULL columns.
+                    const dbPayload = {
+                        nomor_registrasi: regNo,
+                        nama_lengkap: formData.nama_lengkap?.trim(),
+                        jenis_kelamin: formData.jenis_kelamin,
+                        tempat_lahir: formData.tempat_lahir,
+                        tanggal_lahir: formData.tanggal_lahir,
+                        nik_siswa: formData.nik_siswa,
+                        anak_ke: formData.anak_ke,
+                        jumlah_saudara: formData.jumlah_saudara,
+                        tinggi_badan: formData.tinggi_badan,
+                        berat_badan: formData.berat_badan,
+                        nisn: formData.nisn,
+                        hp: formData.hp,
+                        alamat_lengkap: formData.alamat_lengkap,
+                        no_kk: formData.no_kk,
+                        program_utama: formData.program_utama,
+                        pengetahuan_program: formData.pengetahuan_program,
+                        tahun_pelajaran: activeWave?.tahun_pelajaran,
+                        gelombang: gelombangInt,
+                        status: 'pending'
+                    };
+
+                    // Expose last payload globally for PDF generation
+                    window.__lastRegistrationPayload = { ...dbPayload };
+
+                    // Opsional: nik_ayah, nik_ibu
+                    if (formData.nik_ayah) dbPayload.nik_ayah = formData.nik_ayah;
+                    if (formData.nik_ibu) dbPayload.nik_ibu = formData.nik_ibu;
+
+                    // Attach optional location fields if they exist in form & schema was extended
+                    ['desa_kelurahan','kecamatan','kabupaten_kota','provinsi','kode_pos'].forEach(k => {
+                        if (formData[k]) dbPayload[k] = formData[k];
+                    });
+
+                    // Attach any additional optional columns present in formData that are known to be added later
+                    // (nama_ayah, nik_ayah, nama_ibu, nik_ibu, etc.) Only add if value exists to avoid null constraint issues.
+                    ['nama_ayah','pekerjaan_ayah','penghasilan_ayah','no_hp_ayah','nama_ibu','pekerjaan_ibu','penghasilan_ibu','no_hp_ibu','nama_wali','pekerjaan_wali','penghasilan_wali','no_hp_wali','asal_sekolah','npsn_sekolah','alamat_sekolah','alasan_memilih','catatan'].forEach(k => {
+                        if (formData[k]) dbPayload[k] = formData[k];
+                    });
+
+                    // Log warnings for missing required fields (helps diagnose NOT NULL violations)
+                    const requiredFields = ['nama_lengkap','jenis_kelamin','tempat_lahir','tanggal_lahir','nik_siswa','nisn','hp','alamat_lengkap','program_utama','tahun_pelajaran','gelombang'];
+                    const missingRequired = requiredFields.filter(f => dbPayload[f] === undefined || dbPayload[f] === null || dbPayload[f] === '');
+                    // Missing required fields before insert
+
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add("opacity-50");
+                    submitBtn.textContent = "⏳ Mengirim...";
+
+                    try {
+                        // Step 1: Upload files first (if any)
+                        let fileUrls = {};
+                        if (Object.keys(uploadedFiles).length > 0) {
+                            submitBtn.textContent = "⏳ Mengupload berkas...";
+                            fileUrls = await uploadFilesToStorage(regNo);
+                        }
+
+                        // Step 2: Add file URLs to form data
+                        if (fileUrls.file_akta) dbPayload.url_akta_kelahiran = fileUrls.file_akta;
+                        if (fileUrls.file_kk) dbPayload.url_kartu_keluarga = fileUrls.file_kk;
+                        if (fileUrls.file_ktp_ortu) dbPayload.url_ktp_ortu = fileUrls.file_ktp_ortu;
+
+                        // Update global payload with file URLs for PDF
+                        window.__lastRegistrationPayload = { ...dbPayload };
+
+                        // Step 3: Save to database
+                        submitBtn.textContent = "⏳ Menyimpan data...";
+
+                        if (supabase && window.Config && window.Config.get("SUPABASE_URL")) {
+                            const { data, error } = await supabase
+                                .from("registrasi_siswa")
+                                .insert([dbPayload]);
+
+                            if (error) {
+                                alert(`Gagal menyimpan ke database: ${error.message || 'Unknown error'}`);
+                                throw error;
+                            }
+                        } else {
+                            // Dev fallback: no Supabase configured, skip DB write
+                        }
+
+                        regNumberEl.textContent = `Nomor Registrasi: ${regNo}`;
+                        afterSubmit.classList.remove("hidden");
+                        if (printFormBtn) printFormBtn.disabled = false;
+                        submitBtn.classList.remove("opacity-50");
+                        submitBtn.classList.add(
+                            "opacity-70",
+                            "cursor-not-allowed",
+                        );
+                        submitBtn.textContent = "✓ Terkirim";
+
+                        // Clear localStorage after successful submission
+                        clearFormStorage();
+
+                        afterSubmit.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                        });
+                    } catch (error) {
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove("opacity-50");
+                        submitBtn.textContent = "Kirim Pendaftaran";
+                    }
+                });
+
+                // Restore form data on page load
+                restoreFormData();
+                showStep(0);
+
+                document.addEventListener("keydown", (e) => {
+                    if (e.key === "ArrowRight" && current < total - 1)
+                        showStep(current + 1);
+                    if (e.key === "ArrowLeft" && current > 0)
+                        showStep(current - 1);
+                });
+            })();
+        </script>
+    </body>
+</html>

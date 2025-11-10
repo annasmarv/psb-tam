@@ -1,0 +1,79 @@
+# Security Headers for Cloudflare Pages
+# Best practices for production deployment
+
+# Global Headers (apply to all routes)
+/*
+  # Security Headers
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Content Security Policy (adjust based on your needs)
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; frame-ancestors 'none';
+
+  # Permissions Policy (formerly Feature-Policy)
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+
+  # HSTS (HTTP Strict Transport Security) - Force HTTPS
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  # Cache Control for HTML (no cache, always revalidate)
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Static Assets - Aggressive Caching
+/public/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# CSS Files
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: text/css; charset=utf-8
+
+# JavaScript Files
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: application/javascript; charset=utf-8
+
+# Images
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/jpeg
+
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/png
+
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/svg+xml
+
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/webp
+
+# Fonts
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: font/woff2
+  Access-Control-Allow-Origin: *
+
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: font/woff
+  Access-Control-Allow-Origin: *
+
+# API/JSON files (if any)
+/*.json
+  Cache-Control: public, max-age=3600
+  Content-Type: application/json; charset=utf-8
+
+# HTML Pages - Short cache
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+  Content-Type: text/html; charset=utf-8
+
+# Root files (index.html, etc)
+/
+  Cache-Control: public, max-age=0, must-revalidate
+  Content-Type: text/html; charset=utf-8

@@ -1,0 +1,1981 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://nuuvatfivugzkfwuzlbn.supabase.co;">
+        <title>Dashboard PSB - Admin Panel</title>
+        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="public/js/config.js"></script>
+        <script src="public/js/auth.js"></script>
+        <script src="public/js/security.js"></script>
+        <link rel="stylesheet" href="public/css/connection-indicator.css" />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            :root {
+                --bg-primary: #0a0a0a;
+                --bg-secondary: #141414;
+                --bg-tertiary: #1e1e1e;
+                --bg-hover: #252525;
+                --text-primary: #ffffff;
+                --text-secondary: #a0a0a0;
+                --text-muted: #707070;
+                --border-color: #2a2a2a;
+                --accent: #ffffff;
+                --accent-hover: #e0e0e0;
+                --danger: #ff4444;
+                --success: #44ff44;
+                --warning: #ffaa44;
+            }
+
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Oxygen, Ubuntu, Cantarell, sans-serif;
+                background: var(--bg-primary);
+                color: var(--text-primary);
+                line-height: 1.6;
+            }
+
+            header {
+                background: var(--bg-secondary);
+                border-bottom: 1px solid var(--border-color);
+                padding: 1.5rem 2rem;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                backdrop-filter: blur(10px);
+            }
+
+            .header-content {
+                max-width: 1400px;
+                margin: 0 auto;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+            }
+
+            .nav-links a {
+                padding: 0.5rem 1rem;
+                color: var(--text-secondary);
+                text-decoration: none;
+                border-radius: 6px;
+                transition: all 0.2s;
+                font-size: 0.9375rem;
+            }
+
+            .nav-links a:hover {
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+            }
+
+            .nav-links a.active {
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+            }
+
+            .btn-logout {
+                padding: 0.5rem 1rem;
+                background: var(--bg-tertiary);
+                color: var(--text-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.875rem;
+                transition: all 0.2s;
+            }
+
+            .btn-logout:hover {
+                background: var(--danger);
+                color: var(--text-primary);
+                border-color: var(--danger);
+            }
+
+            .header-title h1 {
+                font-size: 1.5rem;
+                font-weight: 600;
+                letter-spacing: -0.02em;
+            }
+
+            .header-title p {
+                color: var(--text-secondary);
+                font-size: 0.875rem;
+                margin-top: 0.25rem;
+            }
+
+            .btn {
+                padding: 0.625rem 1.25rem;
+                border: none;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                text-decoration: none;
+            }
+
+            .btn-primary {
+                background: var(--accent);
+                color: var(--bg-primary);
+            }
+
+            .btn-primary:hover {
+                background: var(--accent-hover);
+                transform: translateY(-1px);
+            }
+
+            .btn-secondary {
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+                border: 1px solid var(--border-color);
+            }
+
+            .btn-secondary:hover {
+                background: var(--bg-hover);
+            }
+
+            .btn-danger {
+                background: var(--danger);
+                color: white;
+            }
+
+            .btn-danger:hover {
+                background: #cc0000;
+            }
+
+            .btn-sm {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.8125rem;
+            }
+
+            .btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            main {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 2rem;
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 1.5rem;
+                transition: all 0.3s;
+            }
+
+            .stat-card:hover {
+                border-color: var(--text-muted);
+                transform: translateY(-2px);
+            }
+
+            .stat-label {
+                color: var(--text-secondary);
+                font-size: 0.875rem;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .stat-value {
+                font-size: 2.5rem;
+                font-weight: 700;
+                margin-top: 0.5rem;
+                letter-spacing: -0.02em;
+            }
+
+            .card {
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .card-header h2 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+            }
+
+            .controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1rem;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 1rem;
+            }
+
+            .search-box {
+                position: relative;
+                flex: 1;
+                min-width: 250px;
+                max-width: 400px;
+            }
+
+            .search-box input {
+                width: 100%;
+                padding: 0.75rem 1rem 0.75rem 2.75rem;
+                background: var(--bg-tertiary);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                color: var(--text-primary);
+                font-size: 0.875rem;
+                transition: all 0.2s;
+            }
+
+            .search-box input:focus {
+                outline: none;
+                border-color: var(--accent);
+                background: var(--bg-primary);
+            }
+
+            .search-icon {
+                position: absolute;
+                left: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--text-muted);
+            }
+
+            .controls-right {
+                display: flex;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+                flex: 1;
+                justify-content: flex-end;
+            }
+
+            .filter-select {
+                padding: 0.625rem 1rem;
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+                font-size: 0.875rem;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .filter-select:focus {
+                outline: none;
+                border-color: var(--text-muted);
+                background: var(--bg-hover);
+            }
+
+            .bulk-actions {
+                display: none;
+                gap: 0.75rem;
+                align-items: center;
+                padding: 1rem;
+                background: var(--bg-tertiary);
+                border-radius: 8px;
+                margin-bottom: 1rem;
+            }
+
+            .bulk-actions.show {
+                display: flex;
+            }
+
+            .bulk-info {
+                color: var(--text-secondary);
+                font-size: 0.875rem;
+            }
+
+            .table-container {
+                overflow-x: auto;
+                border-radius: 8px;
+                border: 1px solid var(--border-color);
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.875rem;
+            }
+
+            thead {
+                background: var(--bg-tertiary);
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+
+            th {
+                padding: 1rem;
+                text-align: left;
+                font-weight: 600;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                font-size: 0.75rem;
+                letter-spacing: 0.05em;
+                border-bottom: 1px solid var(--border-color);
+                white-space: nowrap;
+            }
+
+            td {
+                padding: 1rem;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            tbody tr {
+                transition: background 0.2s;
+            }
+
+            tbody tr:hover {
+                background: var(--bg-tertiary);
+            }
+
+            tbody tr.selected {
+                background: var(--bg-hover);
+            }
+
+            .badge {
+                padding: 0.25rem 0.75rem;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                display: inline-block;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+            }
+
+            .badge-pending {
+                background: rgba(255, 170, 68, 0.15);
+                color: var(--warning);
+                border: 1px solid rgba(255, 170, 68, 0.3);
+            }
+
+            .badge-approved {
+                background: rgba(68, 255, 68, 0.15);
+                color: var(--success);
+                border: 1px solid rgba(68, 255, 68, 0.3);
+            }
+
+            .badge-rejected {
+                background: rgba(255, 68, 68, 0.15);
+                color: var(--danger);
+                border: 1px solid rgba(255, 68, 68, 0.3);
+            }
+
+            .badge-male {
+                background: rgba(100, 149, 237, 0.15);
+                color: #6495ed;
+                border: 1px solid rgba(100, 149, 237, 0.3);
+            }
+
+            .badge-female {
+                background: rgba(255, 182, 193, 0.15);
+                color: #ffb6c1;
+                border: 1px solid rgba(255, 182, 193, 0.3);
+            }
+
+            .action-buttons {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .icon-btn {
+                padding: 0.5rem;
+                background: transparent;
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--text-secondary);
+            }
+
+            .icon-btn:hover {
+                background: var(--bg-hover);
+                border-color: var(--text-muted);
+                color: var(--text-primary);
+            }
+
+            .icon-btn.danger:hover {
+                background: rgba(255, 68, 68, 0.15);
+                border-color: var(--danger);
+                color: var(--danger);
+            }
+
+            .pagination {
+                display: flex;
+                gap: 0.5rem;
+                justify-content: center;
+                align-items: center;
+                margin-top: 1.5rem;
+                flex-wrap: wrap;
+            }
+
+            .pagination button {
+                padding: 0.5rem 0.875rem;
+                background: var(--bg-tertiary);
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                color: var(--text-primary);
+                cursor: pointer;
+                transition: all 0.2s;
+                font-size: 0.875rem;
+            }
+
+            .pagination button:hover:not(:disabled) {
+                background: var(--bg-hover);
+                border-color: var(--text-muted);
+            }
+
+            .pagination button.active {
+                background: var(--accent);
+                color: var(--bg-primary);
+                border-color: var(--accent);
+            }
+
+            .pagination button:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(4px);
+                z-index: 1000;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .modal.show {
+                display: flex;
+            }
+
+            .modal-content {
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                width: 100%;
+                max-width: 800px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .modal-content::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .modal-content::-webkit-scrollbar-track {
+                background: var(--bg-primary);
+            }
+
+            .modal-content::-webkit-scrollbar-thumb {
+                background: var(--border-color);
+                border-radius: 4px;
+            }
+
+            .modal-content::-webkit-scrollbar-thumb:hover {
+                background: var(--text-muted);
+            }
+
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .modal-header {
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .modal-header h2 {
+                font-size: 1.25rem;
+                font-weight: 600;
+            }
+
+            .close-btn {
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: var(--text-secondary);
+                padding: 0;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 6px;
+                transition: all 0.2s;
+            }
+
+            .close-btn:hover {
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+            }
+
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .detail-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .detail-item {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .detail-label {
+                color: var(--text-secondary);
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                font-weight: 600;
+            }
+
+            .detail-value {
+                color: var(--text-primary);
+                font-size: 0.9375rem;
+            }
+
+            .modal-footer {
+                padding: 1.5rem;
+                border-top: 1px solid var(--border-color);
+                display: flex;
+                gap: 0.75rem;
+                justify-content: flex-end;
+            }
+
+            .status-selector {
+                padding: 0.5rem 0.75rem;
+                background: var(--bg-tertiary);
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                color: var(--text-primary);
+                font-size: 0.875rem;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .status-selector:hover {
+                border-color: var(--text-muted);
+            }
+
+            .status-selector:focus {
+                outline: none;
+                border-color: var(--accent);
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 4rem 2rem;
+                color: var(--text-secondary);
+            }
+
+            .empty-state svg {
+                width: 64px;
+                height: 64px;
+                margin-bottom: 1rem;
+                opacity: 0.5;
+            }
+
+            .loading {
+                display: none;
+                text-align: center;
+                padding: 2rem;
+            }
+
+            .loading.show {
+                display: block;
+            }
+
+            .spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid var(--border-color);
+                border-top-color: var(--accent);
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+                margin: 0 auto;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            .checkbox {
+                width: 18px;
+                height: 18px;
+                cursor: pointer;
+                accent-color: var(--accent);
+            }
+
+            @media (max-width: 768px) {
+                main {
+                    padding: 1rem;
+                }
+
+                .header-content {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 1rem;
+                }
+
+                .nav-links {
+                    width: 100%;
+                    justify-content: flex-start;
+                }
+
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .card {
+                    padding: 1rem;
+                }
+
+                .card-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 1rem;
+                }
+
+                .controls {
+                    flex-direction: column;
+                }
+
+                .search-box {
+                    max-width: 100%;
+                }
+
+                .controls-right {
+                    width: 100%;
+                    flex-direction: column;
+                }
+
+                .controls-right .btn,
+                .filter-select {
+                    width: 100%;
+                    justify-content: center;
+                }
+
+                .table-container {
+                    border-radius: 0;
+                }
+
+                th,
+                td {
+                    padding: 0.75rem 0.5rem;
+                    font-size: 0.8125rem;
+                }
+
+                .detail-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .toast {
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 1rem 1.5rem;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                z-index: 2000;
+                animation: slideInUp 0.3s ease-out;
+                display: none;
+            }
+
+            .toast.show {
+                display: block;
+            }
+
+            .toast.success {
+                border-left: 3px solid var(--success);
+            }
+
+            .toast.error {
+                border-left: 4px solid var(--danger);
+            }
+
+            .status-selector {
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                border: 1px solid var(--border-color);
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+                font-size: 0.875rem;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .status-selector:focus {
+                outline: none;
+                border-color: var(--text-muted);
+                background: var(--bg-hover);
+            }
+
+            @keyframes slideInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Dashboard PSB</h1>
+                    <p>Sistem Pendaftaran Siswa Baru</p>
+                </div>
+                <div class="nav-links">
+                    <a href="dashboard.html" class="active">Dashboard</a>
+                    <a href="settings.html">Pengaturan</a>
+                    <button class="btn-logout" onclick="handleLogout()">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Pendaftar</div>
+                    <div class="stat-value" id="totalPendaftar">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">TJKT</div>
+                    <div class="stat-value" id="tjktCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Tata Busana</div>
+                    <div class="stat-value" id="busanaCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Tata Boga</div>
+                    <div class="stat-value" id="bogaCount">0</div>
+                </div>
+            </div>
+
+            <!-- Data Table Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Data Pendaftar</h2>
+                    <button class="btn btn-secondary" onclick="exportToExcel()">
+                        <svg
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                        </svg>
+                        Export Excel
+                    </button>
+                </div>
+
+                <div class="controls">
+                    <div class="search-box">
+                        <svg
+                            class="search-icon"
+                            width="20"
+                            height="20"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            />
+                        </svg>
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Cari nama, NISN, sekolah..."
+                            oninput="applyFilter()"
+                        />
+                    </div>
+                    <div class="controls-right">
+                        <select
+                            id="filterTahunPelajaran"
+                            class="filter-select"
+                            onchange="applyFilter()"
+                        >
+                            <option value="">Semua Tahun</option>
+                        </select>
+                        <select
+                            id="filterGelombang"
+                            class="filter-select"
+                            onchange="applyFilter()"
+                        >
+                            <option value="">Semua Gelombang</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bulk Actions -->
+                <div class="bulk-actions" id="bulkActions">
+                    <input
+                        type="checkbox"
+                        class="checkbox"
+                        id="selectAllBulk"
+                        onchange="toggleSelectAll()"
+                    />
+                    <span class="bulk-info"
+                        ><span id="selectedCount">0</span> item dipilih</span
+                    >
+                    <select class="status-selector" id="bulkStatus">
+                        <option value="">-- Ubah Status --</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <button
+                        class="btn btn-secondary btn-sm"
+                        onclick="bulkUpdateStatus()"
+                    >
+                        Terapkan Status
+                    </button>
+                    <button
+                        class="btn btn-danger btn-sm"
+                        onclick="confirmBulkDelete()"
+                    >
+                        Hapus Terpilih
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 1rem; color: var(--text-secondary)">
+                        Memuat data...
+                    </p>
+                </div>
+
+                <div class="table-container" id="tableContainer">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input
+                                        type="checkbox"
+                                        class="checkbox"
+                                        id="selectAllHeader"
+                                    />
+                                </th>
+                                <th>No</th>
+                                <th>No. Reg</th>
+                                <th>Tahun</th>
+                                <th>Gel</th>
+                                <th>Tanggal</th>
+                                <th>Nama</th>
+                                <th>NISN</th>
+                                <th>JK</th>
+                                <th>Asal Sekolah</th>
+                                <th>Program</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="empty-state" id="emptyState" style="display: none">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                    </svg>
+                    <p style="font-size: 1.125rem; margin-bottom: 0.5rem">
+                        Tidak ada data
+                    </p>
+                    <p>Data pendaftar akan muncul di sini</p>
+                </div>
+
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </main>
+
+        <!-- Detail Modal -->
+        <div class="modal" id="detailModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Detail Pendaftar</h2>
+                    <button
+                        class="close-btn"
+                        onclick="closeModal('detailModal')"
+                    >
+                        &times;
+                    </button>
+                </div>
+                <div class="modal-body" id="detailContent">
+                    <!-- Will be populated dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button
+                        class="btn btn-danger btn-sm"
+                        onclick="confirmDeleteSingle(currentDetailId)"
+                    >
+                        Hapus
+                    </button>
+                    <div style="flex: 1;"></div>
+                    <button
+                        class="btn btn-secondary btn-sm"
+                        onclick="closeModal('detailModal')"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        class="btn btn-primary btn-sm"
+                        onclick="updateSingleStatus()"
+                    >
+                        Simpan Status
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div class="toast" id="toast"></div>
+
+        <script>
+            let supabase;
+            let allData = [];
+            let filteredData = [];
+            let currentPage = 1;
+            const itemsPerPage = 10;
+            let selectedItems = new Set();
+            let currentDetailId = null;
+            let allYears = [];
+            let allGelombang = [];
+            let currentFilterYear = "";
+            let currentFilterGelombang = "";
+
+            // Wait for Supabase auth to be ready
+            async function waitForSupabase() {
+                for (let i = 0; i < 100; i++) {
+                    // Check for initialized client
+                    if (window.__supabaseClient && typeof window.__supabaseClient.from === 'function') {
+                        return window.__supabaseClient;
+                    }
+                    
+                    // Try to initialize
+                    if (window.Config && typeof window.Config.initSupabase === 'function') {
+                        const client = window.Config.initSupabase();
+                        if (client && typeof client.from === 'function') {
+                            return client;
+                        }
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+                
+                throw new Error('Supabase tidak siap setelah timeout');
+            }
+
+            function insertConfigWarningBanner() {
+                if (document.getElementById("configWarningBanner")) return;
+                const banner = document.createElement("div");
+                banner.id = "configWarningBanner";
+                banner.style.marginBottom = "1.5rem";
+                banner.innerHTML = `
+                    <div style="background:#332b00;border:1px solid #806b00;padding:1rem 1.25rem;border-radius:8px;font-size:0.8125rem;line-height:1.45;">
+                        <strong style="color:#f6c84c;">⚠️ Supabase belum terkonfigurasi.</strong>
+                        <div style="margin-top:0.5rem;color:#dacfa8;">Dashboard running in dev mode without database. Configure Supabase to enable data queries.</div>
+                        <div style="margin-top:0.75rem;">
+                            <a href="/public/setup-config.html" style="display:inline-block;background:#ffffff;color:#0a0a0a;font-weight:600;padding:0.5rem 0.75rem;border-radius:6px;text-decoration:none;">Setup Config</a>
+                        </div>
+                    </div>`;
+                const mainEl = document.querySelector('main');
+                if (mainEl) mainEl.prepend(banner);
+            }
+
+            async function init() {
+                try {
+                    const SUPABASE_URL = window.Config ? window.Config.get("SUPABASE_URL") : null;
+                    const SUPABASE_KEY = window.Config ? window.Config.get("SUPABASE_ANON_KEY") : null;
+
+                    if (!SUPABASE_URL || !SUPABASE_KEY) {
+                        console.warn("[Dashboard] Supabase config missing — running in dev fallback mode");
+                        insertConfigWarningBanner();
+                        allData = [];
+                        filteredData = [];
+                        updateStats();
+                        renderTable();
+                        return;
+                    }
+
+                    supabase = await waitForSupabase();
+                    
+                    if (!supabase || typeof supabase.from !== 'function') {
+                        throw new Error('Supabase client not available');
+                    }
+
+                    console.log("[Dashboard] Supabase ready");
+                    await loadActiveWave();
+                    await loadData();
+                } catch (error) {
+                    console.error("[Dashboard] Init error:", error);
+                    showToast("Gagal menginisialisasi aplikasi: " + error.message, "error");
+                }
+            }
+
+            // Load active wave and set filter
+            async function loadActiveWave() {
+                try {
+                    const { data: activeWave, error } = await supabase
+                        .from("pengaturan_psb")
+                        .select("tahun_pelajaran, gelombang")
+                        .eq("is_active", true)
+                        .single();
+
+                    if (activeWave && !error) {
+                        currentFilterYear = activeWave.tahun_pelajaran;
+                        currentFilterGelombang = activeWave.gelombang.toString();
+                        console.log("[Dashboard] Active wave loaded:", { tahun: currentFilterYear, gelombang: currentFilterGelombang });
+                    }
+                } catch (error) {
+                    console.warn("[Dashboard] No active wave found:", error.message);
+                    currentFilterYear = "";
+                    currentFilterGelombang = "";
+                }
+            }
+
+            async function loadData() {
+                showLoading(true);
+                try {
+                    const { data, error } = await supabase
+                        .from("registrasi_siswa")
+                        .select("*")
+                        .order("created_at", { ascending: false });
+
+                    if (error) throw error;
+
+                    allData = data || [];
+
+                    allYears = [
+                        ...new Set(
+                            allData
+                                .map((item) => item.tahun_pelajaran)
+                                .filter(Boolean),
+                        ),
+                    ]
+                        .sort()
+                        .reverse();
+                    allGelombang = [
+                        ...new Set(
+                            allData
+                                .map((item) => item.gelombang)
+                                .filter(Boolean),
+                        ),
+                    ].sort();
+
+                    populateFilters();
+                    applyFilter();
+                    currentPage = 1;
+                    selectedItems.clear();
+
+                    updateStats();
+                    renderTable();
+                    console.log("[Dashboard] Data loaded:", { total: allData.length, years: allYears.length, gelombang: allGelombang.length });
+                } catch (error) {
+                    console.error("[Dashboard] Load data error:", error);
+                    showToast("Gagal memuat data: " + error.message, "error");
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            function populateFilters() {
+                const filterYear = document.getElementById(
+                    "filterTahunPelajaran",
+                );
+                if (filterYear) {
+                    filterYear.innerHTML =
+                        '<option value="">Semua Tahun</option>';
+                    allYears.forEach((year) => {
+                        const option = document.createElement("option");
+                        option.value = year;
+                        option.textContent = year;
+                        filterYear.appendChild(option);
+                    });
+
+                    // Set to current filter (from active wave or previous selection)
+                    if (
+                        currentFilterYear &&
+                        allYears.includes(currentFilterYear)
+                    ) {
+                        filterYear.value = currentFilterYear;
+                    }
+                }
+
+                const filterGel = document.getElementById("filterGelombang");
+                if (filterGel) {
+                    filterGel.innerHTML =
+                        '<option value="">Semua Gelombang</option>';
+                    allGelombang.forEach((gel) => {
+                        const option = document.createElement("option");
+                        option.value = gel;
+                        option.textContent = `Gelombang ${gel}`;
+                        filterGel.appendChild(option);
+                    });
+
+                    // Set to current filter (from active wave or previous selection)
+                    if (
+                        currentFilterGelombang &&
+                        allGelombang.includes(parseInt(currentFilterGelombang))
+                    ) {
+                        filterGel.value = currentFilterGelombang;
+                    }
+                }
+            }
+
+            function updateStats() {
+                const dataToUse = filteredData;
+                const total = dataToUse.length;
+                let tjkt = 0, busana = 0, boga = 0;
+                dataToUse.forEach((item) => {
+                    const programRaw = item.program_keahlian ?? item.program_utama ?? '';
+                    const program = String(programRaw).toLowerCase();
+                    if (program === 'tjkt') tjkt++;
+                    else if (program === 'tatabusana' || program === 'tata busana') busana++;
+                    else if (program === 'tataboga' || program === 'tata boga') boga++;
+                });
+
+                document.getElementById("totalPendaftar").textContent = total;
+                document.getElementById("tjktCount").textContent = tjkt;
+                document.getElementById("busanaCount").textContent = busana;
+                document.getElementById("bogaCount").textContent = boga;
+            }
+
+
+            function renderTable() {
+                const tbody = document.querySelector("tbody");
+                const totalPages = Math.ceil(
+                    filteredData.length / itemsPerPage,
+                );
+
+                if (filteredData.length === 0) {
+                    tbody.innerHTML = "";
+                    document.getElementById("emptyState").style.display = "";
+                    document.getElementById("pagination").innerHTML = "";
+                    return;
+                }
+
+                document.getElementById("emptyState").style.display = "none";
+
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const pageData = filteredData.slice(startIndex, endIndex);
+
+                tbody.innerHTML = pageData
+                    .map((item, index) => {
+                        const rowNumber = startIndex + index + 1;
+                        const isSelected = selectedItems.has(String(item.id));
+                        const program = String(item.program_keahlian || item.program_utama || '').toUpperCase();
+                        const gender = String(item.jenis_kelamin || '').toLowerCase();
+                        
+                        // Gender badge - L or P
+                        let genderDisplay = '-';
+                        let genderBadge = '';
+                        if (gender === 'l' || gender === 'laki-laki') {
+                            genderDisplay = 'L';
+                            genderBadge = 'badge-male';
+                        } else if (gender === 'p' || gender === 'perempuan') {
+                            genderDisplay = 'P';
+                            genderBadge = 'badge-female';
+                        }
+                        
+                        const statusBadge = `badge-${item.status || 'pending'}`;
+                        const date = item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-';
+                        const gelombang = item.gelombang ? `G${item.gelombang}` : '-';
+
+                        return `
+                            <tr class="${isSelected ? 'selected' : ''}">
+                                <td><input type="checkbox" class="checkbox row-checkbox" data-id="${item.id}" ${isSelected ? 'checked' : ''} /></td>
+                                <td>${rowNumber}</td>
+                                <td>${item.nomor_registrasi || '-'}</td>
+                                <td>${item.tahun_pelajaran || '-'}</td>
+                                <td>${gelombang}</td>
+                                <td>${date}</td>
+                                <td>${item.nama_lengkap || '-'}</td>
+                                <td>${item.nisn || '-'}</td>
+                                <td><span class="badge ${genderBadge}">${genderDisplay}</span></td>
+                                <td>${item.asal_sekolah || '-'}</td>
+                                <td>${program}</td>
+                                <td><span class="badge ${statusBadge}">${item.status || 'pending'}</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="icon-btn btn-view" data-id="${item.id}" title="View">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                            </svg>
+                                        </button>
+                                        <button class="icon-btn danger btn-delete" data-id="${item.id}" title="Delete">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-9l-1 1H5v2h14V4z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    })
+                    .join("");
+
+                renderPagination(totalPages);
+                updateBulkActionsVisibility();
+            }
+
+            function renderPagination(totalPages) {
+                const pagination = document.getElementById("pagination");
+
+                if (totalPages <= 1) {
+                    pagination.innerHTML = "";
+                    return;
+                }
+
+                let html = `
+                            <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? "disabled" : ""}>
+                                ← Prev
+                            </button>
+                        `;
+
+                const maxButtons = 5;
+                let startPage = Math.max(
+                    1,
+                    currentPage - Math.floor(maxButtons / 2),
+                );
+                let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+                if (endPage - startPage < maxButtons - 1) {
+                    startPage = Math.max(1, endPage - maxButtons + 1);
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    html += `
+                                <button class="${i === currentPage ? "active" : ""}" onclick="changePage(${i})">
+                                    ${i}
+                                </button>
+                            `;
+                }
+
+                html += `
+                            <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? "disabled" : ""}>
+                                Next →
+                            </button>
+                        `;
+
+                pagination.innerHTML = html;
+            }
+
+            function changePage(page) {
+                const totalPages = Math.ceil(
+                    filteredData.length / itemsPerPage,
+                );
+                if (page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    renderTable();
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+            }
+
+            function applyFilter() {
+                const searchTerm = document
+                    .getElementById("searchInput")
+                    .value.toLowerCase();
+
+                // Get filter values and save to current filter variables
+                const filterYear =
+                    document.getElementById("filterTahunPelajaran")?.value ||
+                    "";
+                const filterGel =
+                    document.getElementById("filterGelombang")?.value || "";
+
+                // Update current filter variables
+                currentFilterYear = filterYear;
+                currentFilterGelombang = filterGel;
+
+                filteredData = allData.filter((item) => {
+                    // Search filter
+                    const nama = item.nama_lengkap?.toLowerCase() || "";
+                    const nisn = item.nisn?.toLowerCase() || "";
+                    const sekolah = item.asal_sekolah?.toLowerCase() || "";
+                    const noReg = item.nomor_registrasi?.toLowerCase() || "";
+
+                    const matchSearch =
+                        searchTerm === "" ||
+                        nama.includes(searchTerm) ||
+                        nisn.includes(searchTerm) ||
+                        sekolah.includes(searchTerm) ||
+                        noReg.includes(searchTerm);
+
+                    // Year filter
+                    const matchYear =
+                        filterYear === "" ||
+                        item.tahun_pelajaran === filterYear;
+
+                    // Gelombang filter
+                    const matchGelombang =
+                        filterGel === "" ||
+                        String(item.gelombang) === filterGel;
+
+                    return matchSearch && matchYear && matchGelombang;
+                });
+
+                currentPage = 1;
+                selectedItems.clear();
+                updateStats();
+                renderTable();
+            }
+
+            function toggleSelect(id) {
+                const idStr = String(id);
+                if (selectedItems.has(idStr)) {
+                    selectedItems.delete(idStr);
+                } else {
+                    selectedItems.add(idStr);
+                }
+
+                updateBulkActionsVisibility();
+
+                // Update row visual state dengan cara yang kompatibel
+                const checkboxes = document.querySelectorAll(".row-checkbox");
+                checkboxes.forEach((checkbox) => {
+                    const checkboxId = checkbox.getAttribute("data-id");
+                    if (checkboxId === idStr) {
+                        const row = checkbox.closest("tr");
+                        if (row) {
+                            if (selectedItems.has(idStr)) {
+                                row.classList.add("selected");
+                                checkbox.checked = true;
+                            } else {
+                                row.classList.remove("selected");
+                                checkbox.checked = false;
+                            }
+                        }
+                    }
+                });
+            }
+
+            function toggleSelectAll() {
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const pageData = filteredData.slice(startIndex, endIndex);
+
+                if (pageData.length === 0) {
+                    return;
+                }
+
+                // Cek apakah semua item di halaman ini sudah dipilih
+                const allPageSelected = pageData.every((item) =>
+                    selectedItems.has(String(item.id)),
+                );
+
+                if (allPageSelected) {
+                    pageData.forEach((item) =>
+                        selectedItems.delete(String(item.id)),
+                    );
+                } else {
+                    pageData.forEach((item) =>
+                        selectedItems.add(String(item.id)),
+                    );
+                }
+                renderTable();
+            }
+
+            function updateBulkActionsVisibility() {
+                const bulkActions = document.getElementById("bulkActions");
+                const selectedCount = document.getElementById("selectedCount");
+                const selectAllHeader = document.getElementById("selectAllHeader");
+                const selectAllBulk = document.getElementById("selectAllBulk");
+
+                selectedCount.textContent = selectedItems.size;
+                if (selectedItems.size > 0) {
+                    bulkActions.classList.add("show");
+                } else {
+                    bulkActions.classList.remove("show");
+                }
+
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const pageData = filteredData.slice(startIndex, endIndex);
+                const allPageSelected = pageData.length > 0 && pageData.every(item => selectedItems.has(String(item.id)));
+
+                if (selectAllHeader) selectAllHeader.checked = allPageSelected;
+                if (selectAllBulk) selectAllBulk.checked = allPageSelected;
+            }
+
+            async function bulkUpdateStatus() {
+                const status = document.getElementById("bulkStatus").value;
+                if (!status) {
+                    showToast("Pilih status terlebih dahulu", "error");
+                    return;
+                }
+
+                if (selectedItems.size === 0) {
+                    showToast("Pilih minimal satu item", "error");
+                    return;
+                }
+
+                if (
+                    !confirm(
+                        `Ubah status ${selectedItems.size} item menjadi ${status}?`,
+                    )
+                )
+                    return;
+
+                try {
+                    const ids = Array.from(selectedItems);
+                    const { error } = await supabase
+                        .from("registrasi_siswa")
+                        .update({ status: status })
+                        .in("id", ids);
+
+                    if (error) throw error;
+
+                    console.log("[Dashboard] Bulk status updated:", { count: selectedItems.size, status });
+                    showToast(
+                        `Berhasil mengubah status ${selectedItems.size} item`,
+                        "success",
+                    );
+                    selectedItems.clear();
+                    await loadData();
+                } catch (error) {
+                    console.error("[Dashboard] Bulk update error:", error);
+                    showToast("Gagal mengubah status: " + error.message, "error");
+                }
+            }
+
+            function confirmBulkDelete() {
+                if (selectedItems.size === 0) {
+                    showToast("Pilih minimal satu item", "error");
+                    return;
+                }
+
+                if (
+                    confirm(
+                        `Hapus ${selectedItems.size} item terpilih? Tindakan ini tidak dapat dibatalkan.`,
+                    )
+                ) {
+                    bulkDelete();
+                }
+            }
+
+            async function bulkDelete() {
+                showLoading(true);
+                try {
+                    const ids = Array.from(selectedItems);
+
+                    const { data, error } = await supabase
+                        .from("registrasi_siswa")
+                        .delete()
+                        .in("id", ids)
+                        .select();
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    console.log("[Dashboard] Bulk delete completed:", { count: ids.length });
+                    showToast(
+                        `Berhasil menghapus ${ids.length} item`,
+                        "success",
+                    );
+                    selectedItems.clear();
+                    await loadData();
+                } catch (error) {
+                    console.error("[Dashboard] Bulk delete error:", error);
+                    showToast("Gagal menghapus data: " + error.message, "error");
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            function viewDetail(id) {
+                const item = allData.find((d) => {
+                    return String(d.id) === String(id);
+                });
+
+                if (!item) {
+                    showToast("Data tidak ditemukan", "error");
+                    return;
+                }
+
+                currentDetailId = id;
+                const content = document.getElementById("detailContent");
+
+                const date = item.created_at ? new Date(item.created_at).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                }) : "-";
+
+                const program = String(item.program_keahlian || item.program_utama || '').toUpperCase();
+                const gender = String(item.jenis_kelamin || '').toLowerCase();
+                const genderDisplay = gender === 'l' || gender === 'laki-laki' ? 'Laki-laki' : gender === 'p' || gender === 'perempuan' ? 'Perempuan' : '-';
+
+                content.innerHTML = `
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="font-weight: 600; margin-bottom: 1rem; font-size: 0.9375rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Data Pendaftaran</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Nomor Registrasi</span>
+                                <span class="detail-value">${item.nomor_registrasi || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Tahun Pelajaran</span>
+                                <span class="detail-value">${item.tahun_pelajaran || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Gelombang</span>
+                                <span class="detail-value">Gelombang ${item.gelombang || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Tanggal Daftar</span>
+                                <span class="detail-value">${date}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="font-weight: 600; margin-bottom: 1rem; font-size: 0.9375rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Data Pribadi</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Nama Lengkap</span>
+                                <span class="detail-value">${item.nama_lengkap || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">NISN</span>
+                                <span class="detail-value">${item.nisn || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Jenis Kelamin</span>
+                                <span class="detail-value">${genderDisplay}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Tempat Lahir</span>
+                                <span class="detail-value">${item.tempat_lahir || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Tanggal Lahir</span>
+                                <span class="detail-value">${item.tanggal_lahir || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">NIK Siswa</span>
+                                <span class="detail-value">${item.nik_siswa || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Anak Ke</span>
+                                <span class="detail-value">${item.anak_ke || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Jumlah Saudara</span>
+                                <span class="detail-value">${item.jumlah_saudara || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Tinggi Badan (cm)</span>
+                                <span class="detail-value">${item.tinggi_badan || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Berat Badan (kg)</span>
+                                <span class="detail-value">${item.berat_badan || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="font-weight: 600; margin-bottom: 1rem; font-size: 0.9375rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Sekolah & Program</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Asal Sekolah</span>
+                                <span class="detail-value">${item.asal_sekolah || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Program Keahlian</span>
+                                <span class="detail-value">${program}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Pengetahuan Program</span>
+                                <span class="detail-value">${item.pengetahuan_program || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="font-weight: 600; margin-bottom: 1rem; font-size: 0.9375rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Kontak & Alamat</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">HP/WA</span>
+                                <span class="detail-value">${item.hp || '-'}</span>
+                            </div>
+                            <div class="detail-item" style="grid-column: 1 / -1;">
+                                <span class="detail-label">Alamat Lengkap</span>
+                                <span class="detail-value">${item.alamat_lengkap || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="font-weight: 600; margin-bottom: 1rem; font-size: 0.9375rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Data Orang Tua</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">No. KK (Kartu Keluarga)</span>
+                                <span class="detail-value">${item.no_kk || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Nama Ayah</span>
+                                <span class="detail-value">${item.nama_ayah || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">NIK Ayah</span>
+                                <span class="detail-value">${item.nik_ayah || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Nama Ibu</span>
+                                <span class="detail-value">${item.nama_ibu || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">NIK Ibu</span>
+                                <span class="detail-value">${item.nik_ibu || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.5rem;">
+                        <h3 style="font-weight: 600; margin-bottom: 0.75rem; font-size: 0.9375rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Berkas Unggahan (Opsional)</h3>
+                        ${(() => {
+                            const docs = [
+                                { label: 'Akta Kelahiran', key: 'url_akta_kelahiran' },
+                                { label: 'Kartu Keluarga (KK)', key: 'url_kartu_keluarga' },
+                                { label: 'KTP Orang Tua / Wali', key: 'url_ktp_ortu' }
+                            ];
+                            const available = docs.filter(d => item[d.key]);
+                            if (available.length === 0) {
+                                return `<p style=\"font-size:0.8125rem; color: var(--text-muted);\">Tidak ada berkas yang diupload.</p>`;
+                            }
+                            return `<ul style=\"list-style:none; padding:0; margin:0; display:grid; gap:0.5rem;\">` +
+                                available.map(d => {
+                                    const url = item[d.key];
+                                    const short = url.length > 60 ? url.slice(0, 42) + '…' + url.slice(-12) : url;
+                                    return `<li style=\"display:flex; align-items:center; gap:0.5rem;\">
+                                        <span style=\"flex:0 0 170px; font-size:0.75rem; font-weight:600; color:var(--text-secondary);\">${d.label}</span>
+                                        <a href=\"${url}\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"font-size:0.8125rem; color: var(--accent); text-decoration:underline; word-break:break-all;\">Lihat Berkas</a>
+                                    </li>`;
+                                }).join('') + `</ul>`;
+                        })()}
+                        <p style="margin-top:0.75rem; font-size:0.6875rem; color:var(--text-muted); line-height:1.4;">Catatan: Berkas ditampilkan sebagai tautan. Jika ingin pratinjau gambar langsung, perlu menambahkan domain storage Supabase ke kebijakan Content-Security-Policy (img-src).</p>
+                    </div>
+
+                    <div style="padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                        <h3 style="font-weight: 600; margin-bottom: 1rem; font-size: 0.9375rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Status Pendaftaran</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item" style="grid-column: 1 / -1;">
+                                <span class="detail-label">Ubah Status</span>
+                                <select id="modalStatus" class="status-selector" style="margin-top: 0.5rem; padding: 0.75rem 1rem;">
+                                    <option value="pending" ${item.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="approved" ${item.status === 'approved' ? 'selected' : ''}>Approved</option>
+                                    <option value="rejected" ${item.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                openModal("detailModal");
+            }
+
+            async function updateSingleStatus() {
+                if (!currentDetailId) return;
+
+                const status = document.getElementById("modalStatus").value;
+
+                try {
+                    const { error } = await supabase
+                        .from("registrasi_siswa")
+                        .update({ status: status })
+                        .eq("id", currentDetailId);
+
+                    if (error) throw error;
+
+                    console.log("[Dashboard] Single status updated:", { id: currentDetailId, status });
+                    showToast("Status berhasil diperbarui", "success");
+                    closeModal("detailModal");
+                    await loadData();
+                } catch (error) {
+                    console.error("[Dashboard] Update status error:", error);
+                    showToast("Gagal memperbarui status: " + error.message, "error");
+                }
+            }
+
+            function confirmDelete() {
+                if (!currentDetailId) return;
+
+                if (
+                    confirm(
+                        "Hapus data ini? Tindakan ini tidak dapat dibatalkan.",
+                    )
+                ) {
+                    deleteSingle(currentDetailId);
+                }
+            }
+
+            function confirmDeleteSingle(id) {
+                if (
+                    confirm(
+                        "Hapus data ini? Tindakan ini tidak dapat dibatalkan.",
+                    )
+                ) {
+                    deleteSingle(id);
+                }
+            }
+
+            async function deleteSingle(id) {
+                showLoading(true);
+                try {
+                    const idStr = String(id);
+
+                    const { data, error } = await supabase
+                        .from("registrasi_siswa")
+                        .delete()
+                        .eq("id", idStr)
+                        .select();
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    console.log("[Dashboard] Single delete completed:", { id: idStr });
+                    showToast("Data berhasil dihapus", "success");
+                    closeModal("detailModal");
+
+                    selectedItems.delete(idStr);
+                    await loadData();
+                } catch (error) {
+                    console.error("[Dashboard] Delete error:", error);
+                    showToast("Gagal menghapus data: " + error.message, "error");
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            async function exportToExcel() {
+                if (filteredData.length === 0) {
+                    showToast("Tidak ada data untuk diekspor", "error");
+                    return;
+                }
+
+                try {
+                    const filterYear =
+                        document.getElementById("filterTahunPelajaran")
+                            ?.value || "Semua";
+                    const filterGel =
+                        document.getElementById("filterGelombang")?.value ||
+                        "Semua";
+
+                    const worksheet = XLSX.utils.json_to_sheet(filteredData);
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, "Registrasi");
+                    
+                    const fileName = `PSB_Registrasi_${filterYear}_Gel${filterGel}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    XLSX.writeFile(workbook, fileName);
+
+                    console.log("[Dashboard] Export completed:", { rows: filteredData.length, fileName });
+                    showToast("Data berhasil diekspor", "success");
+                } catch (error) {
+                    console.error("[Dashboard] Export error:", error);
+                    showToast("Gagal mengekspor data: " + error.message, "error");
+                }
+            }
+
+            function openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add("show");
+                    document.body.style.overflow = "hidden";
+                }
+            }
+
+            function closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove("show");
+                }
+                document.body.style.overflow = "";
+                currentDetailId = null;
+            }
+
+            function showLoading(show) {
+                const loading = document.getElementById("loading");
+                if (show) {
+                    loading.classList.add("show");
+                } else {
+                    loading.classList.remove("show");
+                }
+            }
+
+            function showToast(message, type = "success") {
+                const toast = document.getElementById("toast");
+                toast.textContent = message;
+                toast.className = `toast ${type} show`;
+
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 3000);
+            }
+
+            window.onclick = function (event) {
+                if (event.target.classList.contains("modal")) {
+                    event.target.classList.remove("show");
+                    document.body.style.overflow = "";
+                    currentDetailId = null;
+                }
+            };
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const tableBody = document.getElementById("tableBody");
+                tableBody.addEventListener("click", function (e) {
+                    const viewBtn = e.target.closest(".btn-view");
+                    const deleteBtn = e.target.closest(".btn-delete");
+
+                    if (viewBtn) {
+                        const id = viewBtn.getAttribute("data-id");
+                        if (id) {
+                            viewDetail(id);
+                        }
+                    } else if (deleteBtn) {
+                        const id = deleteBtn.getAttribute("data-id");
+                        if (id) {
+                            confirmDeleteSingle(id);
+                        }
+                    }
+                });
+
+                tableBody.addEventListener("change", function (e) {
+                    if (e.target.classList.contains("row-checkbox")) {
+                        const id = e.target.getAttribute("data-id");
+                        if (id) {
+                            toggleSelect(id);
+                        }
+                    }
+                });
+
+                const selectAllHeader = document.getElementById("selectAllHeader");
+                const selectAllBulk = document.getElementById("selectAllBulk");
+                [selectAllHeader, selectAllBulk].forEach(cb => {
+                    if (!cb) return;
+                    cb.addEventListener("change", () => {
+                        toggleSelectAll();
+                    });
+                });
+
+                console.log('[Dashboard] Initializing...');
+                init();
+            });
+
+            // Handle logout
+            async function handleLogout() {
+                if (!confirm('Apakah Anda yakin ingin logout?')) {
+                    return;
+                }
+                
+                try {
+                    showLoading(true);
+                    await Auth.logout();
+                } catch (error) {
+                    console.error('[Dashboard] Logout error:', error);
+                    showToast('Gagal logout: ' + error.message, 'error');
+                    showLoading(false);
+                }
+            }
+        </script>
+    </body>
+</html>

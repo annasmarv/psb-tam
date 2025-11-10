@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>PSB SMK Tahasus Plus Al Mardliyah</title>
+        <meta
+            name="description"
+            content="Penerimaan Siswa Baru - SMK Tahasus Plus Al Mardliyah | SMK Pusat Keunggulan"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="public/js/config.js"></script>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            :root {
+                --brand-green: #0f9d58;
+                --brand-green-dark: #0b7a43;
+                --brand-gold: #f6c84c;
+                --bg-soft: #f7faf7;
+            }
+
+            html {
+                font-size: 16px;
+            }
+
+            @media (min-width: 768px) {
+                html {
+                    font-size: 16px;
+                }
+            }
+
+            body {
+                overflow-x: hidden;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+                    "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+
+            .card {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 8px 20px rgba(2, 6, 23, 0.04);
+                padding: 1rem;
+            }
+
+            @media (min-width: 640px) {
+                .card {
+                    border-radius: 14px;
+                    padding: 1.5rem;
+                }
+            }
+
+            @media (min-width: 1024px) {
+                .card {
+                    padding: 2rem;
+                }
+            }
+
+            .jurusan-card {
+                position: relative;
+                overflow: hidden;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                cursor: pointer;
+            }
+
+            .jurusan-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 40px rgba(15, 157, 88, 0.15);
+            }
+
+            .jurusan-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(
+                    135deg,
+                    rgba(15, 157, 88, 0.05),
+                    rgba(15, 157, 88, 0.02)
+                );
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .jurusan-card:hover::before {
+                opacity: 1;
+            }
+
+            .icon-3d {
+                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .jurusan-card:hover .icon-3d {
+                transform: scale(1.1) rotateY(10deg);
+            }
+
+            @media (max-width: 640px) {
+                .jurusan-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .info-section {
+                display: flex;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .info-icon {
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: 0.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                flex-shrink: 0;
+            }
+        </style>
+    </head>
+
+    <body class="bg-[var(--bg-soft)] text-slate-800 antialiased">
+        <!-- Header Navigation -->
+        <header
+            class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b"
+            role="banner"
+        >
+            <div
+                class="max-w-3xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2"
+            >
+                <!-- Logo & Branding -->
+                <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <img
+                        src="public/assets/logo.png"
+                        alt="Logo SMK Tahasus Plus Al Mardliyah Kaliwungu"
+                        class="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 object-contain"
+                    />
+                    <div class="min-w-0">
+                        <p
+                            class="text-[0.75rem] sm:text-[0.85rem] text-slate-500 truncate"
+                        >
+                            SMK Pusat Keunggulan
+                        </p>
+                        <p class="text-sm sm:text-base font-semibold truncate">
+                            SMK Tahasus Plus Al Mardliyah
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Primary CTA -->
+                <a
+                    href="registrasi.html"
+                    class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all hover:shadow-md"
+                    style="
+                        background: linear-gradient(
+                            90deg,
+                            var(--brand-green),
+                            var(--brand-green-dark)
+                        );
+                        color: white;
+                    "
+                >
+                    Daftar Sekarang
+                </a>
+            </div>
+        </header>
+
+        <main class="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+            <!-- Hero Section -->
+            <article class="card overflow-hidden">
+                <section class="flex gap-4">
+                    <!-- Hero Content -->
+                    <div class="flex-1">
+                        <h1
+                            id="heroTitle"
+                            class="text-xl sm:text-2xl md:text-3xl font-extrabold leading-tight transition-opacity duration-300"
+                            style="opacity: 0"
+                        >
+                            PSB 2025 — SMK Tahasus Plus Al Mardliyah
+                        </h1>
+                        <p class="mt-3 text-sm sm:text-base text-slate-700">
+                            Program unggulan: Teknik Jaringan Komputer &amp;
+                            Telekomunikasi, Kuliner, dan Tata Busana.
+                            Pembelajaran praktik intensif &amp; sertifikasi
+                            industri.
+                        </p>
+
+                        <div class="mt-4 flex gap-2 sm:gap-3">
+                            <a
+                                href="registrasi.html"
+                                class="flex-1 text-center px-4 py-3 rounded-lg font-semibold text-sm sm:text-base transition-all hover:shadow-md"
+                                style="
+                                    background: var(--brand-green);
+                                    color: white;
+                                "
+                            >
+                                Mulai Pendaftaran
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Decorative Element -->
+                    <aside
+                        class="hidden md:flex w-40 items-center justify-center"
+                        aria-hidden="true"
+                    >
+                        <div
+                            class="w-36 h-36 rounded-lg"
+                            style="
+                                background: linear-gradient(
+                                    135deg,
+                                    var(--brand-green),
+                                    #66c48f
+                                );
+                            "
+                        ></div>
+                    </aside>
+                </section>
+
+                <!-- Program Keahlian Section -->
+                <section
+                    class="mt-5 sm:mt-6 grid jurusan-grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4"
+                    aria-label="Program Keahlian"
+                >
+                    <!-- TJKT Program Card -->
+                    <article
+                        class="jurusan-card bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-5 border border-blue-100"
+                    >
+                        <div class="flex flex-col items-center text-center">
+                            <figure
+                                class="icon-3d w-20 h-20 mb-4 relative"
+                                aria-label="Ikon Program TJKT"
+                            >
+                                <svg
+                                    viewBox="0 0 100 100"
+                                    class="w-full h-full drop-shadow-lg"
+                                    aria-hidden="true"
+                                >
+                                    <rect
+                                        x="15"
+                                        y="25"
+                                        width="70"
+                                        height="45"
+                                        rx="3"
+                                        fill="#3B82F6"
+                                        opacity="0.9"
+                                    />
+                                    <rect
+                                        x="20"
+                                        y="30"
+                                        width="60"
+                                        height="35"
+                                        rx="2"
+                                        fill="#60A5FA"
+                                    />
+                                    <line
+                                        x1="28"
+                                        y1="38"
+                                        x2="48"
+                                        y2="38"
+                                        stroke="#1E40AF"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                    />
+                                    <line
+                                        x1="28"
+                                        y1="45"
+                                        x2="55"
+                                        y2="45"
+                                        stroke="#1E40AF"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                    />
+                                    <line
+                                        x1="28"
+                                        y1="52"
+                                        x2="42"
+                                        y2="52"
+                                        stroke="#1E40AF"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                    />
+                                    <circle
+                                        cx="70"
+                                        cy="45"
+                                        r="3"
+                                        fill="#10B981"
+                                    />
+                                    <rect
+                                        x="45"
+                                        y="70"
+                                        width="10"
+                                        height="8"
+                                        fill="#3B82F6"
+                                        opacity="0.8"
+                                    />
+                                    <rect
+                                        x="35"
+                                        y="78"
+                                        width="30"
+                                        height="3"
+                                        rx="1.5"
+                                        fill="#1E3A8A"
+                                    />
+                                    <circle
+                                        cx="25"
+                                        cy="15"
+                                        r="4"
+                                        fill="#10B981"
+                                        opacity="0.8"
+                                    />
+                                    <circle
+                                        cx="50"
+                                        cy="10"
+                                        r="4"
+                                        fill="#10B981"
+                                        opacity="0.8"
+                                    />
+                                    <circle
+                                        cx="75"
+                                        cy="15"
+                                        r="4"
+                                        fill="#10B981"
+                                        opacity="0.8"
+                                    />
+                                    <line
+                                        x1="25"
+                                        y1="15"
+                                        x2="42"
+                                        y2="25"
+                                        stroke="#10B981"
+                                        stroke-width="1.5"
+                                        opacity="0.6"
+                                    />
+                                    <line
+                                        x1="50"
+                                        y1="10"
+                                        x2="50"
+                                        y2="25"
+                                        stroke="#10B981"
+                                        stroke-width="1.5"
+                                        opacity="0.6"
+                                    />
+                                    <line
+                                        x1="75"
+                                        y1="15"
+                                        x2="58"
+                                        y2="25"
+                                        stroke="#10B981"
+                                        stroke-width="1.5"
+                                        opacity="0.6"
+                                    />
+                                </svg>
+                            </figure>
+                            <h3
+                                class="font-bold text-base sm:text-lg text-blue-900"
+                            >
+                                Teknik Jaringan Komputer &amp; Telekomunikasi
+                            </h3>
+                        </div>
+                    </article>
+
+                    <!-- Tata Boga Program Card -->
+                    <article
+                        class="jurusan-card bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-5 border border-orange-100"
+                    >
+                        <div class="flex flex-col items-center text-center">
+                            <figure
+                                class="icon-3d w-20 h-20 mb-4 relative"
+                                aria-label="Ikon Program Tata Boga"
+                            >
+                                <svg
+                                    viewBox="0 0 100 100"
+                                    class="w-full h-full drop-shadow-lg"
+                                    aria-hidden="true"
+                                >
+                                    <ellipse
+                                        cx="50"
+                                        cy="70"
+                                        rx="30"
+                                        ry="8"
+                                        fill="#F59E0B"
+                                        opacity="0.8"
+                                    />
+                                    <rect
+                                        x="20"
+                                        y="45"
+                                        width="60"
+                                        height="25"
+                                        fill="#FBBF24"
+                                    />
+                                    <circle
+                                        cx="30"
+                                        cy="35"
+                                        r="12"
+                                        fill="#FFF"
+                                        opacity="0.95"
+                                    />
+                                    <circle
+                                        cx="50"
+                                        cy="28"
+                                        r="14"
+                                        fill="#FFF"
+                                        opacity="0.95"
+                                    />
+                                    <circle
+                                        cx="70"
+                                        cy="35"
+                                        r="12"
+                                        fill="#FFF"
+                                        opacity="0.95"
+                                    />
+                                    <circle
+                                        cx="40"
+                                        cy="30"
+                                        r="11"
+                                        fill="#FFF"
+                                        opacity="0.95"
+                                    />
+                                    <circle
+                                        cx="60"
+                                        cy="30"
+                                        r="11"
+                                        fill="#FFF"
+                                        opacity="0.95"
+                                    />
+                                    <ellipse
+                                        cx="50"
+                                        cy="50"
+                                        rx="25"
+                                        ry="3"
+                                        fill="#F59E0B"
+                                        opacity="0.3"
+                                    />
+                                    <g transform="translate(72, 55)">
+                                        <line
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="18"
+                                            stroke="#DC2626"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                        />
+                                        <circle
+                                            cx="0"
+                                            cy="-2"
+                                            r="2.5"
+                                            fill="#DC2626"
+                                        />
+                                    </g>
+                                    <g transform="translate(82, 52)">
+                                        <line
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="20"
+                                            stroke="#DC2626"
+                                            stroke-width="1.5"
+                                            stroke-linecap="round"
+                                        />
+                                        <line
+                                            x1="-2"
+                                            y1="0"
+                                            x2="-2"
+                                            y2="18"
+                                            stroke="#DC2626"
+                                            stroke-width="1.5"
+                                            stroke-linecap="round"
+                                        />
+                                        <line
+                                            x1="2"
+                                            y1="0"
+                                            x2="2"
+                                            y2="18"
+                                            stroke="#DC2626"
+                                            stroke-width="1.5"
+                                            stroke-linecap="round"
+                                        />
+                                    </g>
+                                </svg>
+                            </figure>
+                            <h3
+                                class="font-bold text-base sm:text-lg text-orange-900"
+                            >
+                                Tata Boga
+                            </h3>
+                        </div>
+                    </article>
+
+                    <!-- Tata Busana Program Card -->
+                    <article
+                        class="jurusan-card bg-gradient-to-br from-pink-50 to-rose-50 rounded-2xl p-5 border border-pink-100"
+                    >
+                        <div class="flex flex-col items-center text-center">
+                            <figure
+                                class="icon-3d w-20 h-20 mb-4 relative"
+                                aria-label="Ikon Program Tata Busana"
+                            >
+                                <svg
+                                    viewBox="0 0 100 100"
+                                    class="w-full h-full drop-shadow-lg"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="M35 30 Q35 20, 45 20 L65 20 Q75 20, 75 30 L75 50 Q75 55, 70 55 L40 55 Q35 55, 35 50 Z"
+                                        fill="#EC4899"
+                                        opacity="0.9"
+                                    />
+                                    <rect
+                                        x="42"
+                                        y="15"
+                                        width="16"
+                                        height="8"
+                                        rx="2"
+                                        fill="#DB2777"
+                                    />
+                                    <circle
+                                        cx="55"
+                                        cy="35"
+                                        r="6"
+                                        fill="#FFF"
+                                        opacity="0.9"
+                                    />
+                                    <circle
+                                        cx="55"
+                                        cy="35"
+                                        r="3"
+                                        fill="#DB2777"
+                                    />
+                                    <line
+                                        x1="48"
+                                        y1="45"
+                                        x2="62"
+                                        y2="45"
+                                        stroke="#FFF"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        opacity="0.7"
+                                    />
+                                    <ellipse
+                                        cx="55"
+                                        cy="58"
+                                        rx="25"
+                                        ry="6"
+                                        fill="#9333EA"
+                                        opacity="0.8"
+                                    />
+                                    <rect
+                                        x="30"
+                                        y="55"
+                                        width="50"
+                                        height="8"
+                                        rx="1"
+                                        fill="#A855F7"
+                                        opacity="0.9"
+                                    />
+                                    <line
+                                        x1="55"
+                                        y1="55"
+                                        x2="55"
+                                        y2="68"
+                                        stroke="#64748B"
+                                        stroke-width="2"
+                                    />
+                                    <circle
+                                        cx="55"
+                                        cy="68"
+                                        r="1.5"
+                                        fill="#64748B"
+                                    />
+                                    <path
+                                        d="M65 25 Q70 28, 68 35"
+                                        stroke="#F472B6"
+                                        stroke-width="1.5"
+                                        fill="none"
+                                        opacity="0.8"
+                                    />
+                                    <path
+                                        d="M30 60 L25 70 L35 72 L40 62"
+                                        fill="#FCA5A5"
+                                        opacity="0.6"
+                                    />
+                                    <path
+                                        d="M70 60 L75 70 L65 72 L60 62"
+                                        fill="#FCA5A5"
+                                        opacity="0.6"
+                                    />
+                                </svg>
+                            </figure>
+                            <h3
+                                class="font-bold text-base sm:text-lg text-pink-900"
+                            >
+                                Tata Busana
+                            </h3>
+                        </div>
+                    </article>
+                </section>
+            </article>
+
+            <section id="info" class="mt-4 sm:mt-5">
+                <article class="card">
+                    <h2 class="text-lg sm:text-xl font-semibold mb-2">
+                        Informasi Pendaftaran
+                    </h2>
+                    <p class="text-sm sm:text-base text-slate-700 mb-4">
+                        Baca persyaratan dan jadwal sebelum mendaftar. Untuk
+                        proses cepat gunakan perangkat dengan koneksi stabil.
+                    </p>
+
+                    <section class="mt-4 space-y-3 text-sm sm:text-base">
+                        <div class="info-section">
+                            <div
+                                class="info-icon"
+                                style="background: var(--brand-gold)"
+                            >
+                                📄
+                            </div>
+                            <div>
+                                <h3 class="font-semibold mb-1">Persyaratan</h3>
+                                <ul class="text-slate-600 space-y-1">
+                                    <li>1. Akta Kelahiran</li>
+                                    <li>2. Kartu Keluarga</li>
+                                    <li>3. KTP Orang Tua / Wali</li>
+                                    <li>
+                                        4. NISN (Nomor Induk Siswa Nasional)
+                                    </li>
+                                    <li>5. Foto Calon Siswa</li>
+                                    <li>6. Bukti Transfer Pendaftaran</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-icon bg-emerald-100">⏰</div>
+                            <div>
+                                <h3 class="font-semibold mb-1">Jadwal</h3>
+                                <ul class="text-slate-600 space-y-1">
+                                    <li>
+                                        Gelombang I: 1 November 2025 - 19 April
+                                        2026
+                                    </li>
+                                    <li>
+                                        Gelombang II: 20 April - 21 Juni 2026
+                                    </li>
+                                    <li>
+                                        Gelombang III: 21 Juni - 12 Juli 2026
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-icon bg-emerald-100">📞</div>
+                            <div>
+                                <h3 class="font-semibold mb-1">Kontak</h3>
+                                <ul class="text-slate-600 space-y-1">
+                                    <li>
+                                        085 700 348 460 (Ust. Sigit Wagiyanto,
+                                        S.Kom)
+                                    </li>
+                                    <li>
+                                        085 350 592 595 (Ust. Misbakhul Munir,
+                                        S.Pd)
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="mt-4">
+                        <a
+                            href="registrasi.html"
+                            class="block w-full text-center py-3 rounded-lg font-semibold transition-all hover:shadow-md"
+                            style="
+                                background: linear-gradient(
+                                    90deg,
+                                    var(--brand-green),
+                                    var(--brand-green-dark)
+                                );
+                                color: white;
+                            "
+                        >
+                            Daftar Sekarang
+                        </a>
+                    </div>
+                </article>
+            </section>
+
+            <footer class="mt-6 text-center text-sm text-slate-600 py-4">
+                <p>
+                    &copy; 2025 SMK Tahasus Plus Al Mardliyah. All rights
+                    reserved.
+                </p>
+            </footer>
+        </main>
+
+        <script>
+            // Initialize Supabase and load active wave info
+            async function loadActiveWave() {
+                const titleElement = document.getElementById("heroTitle");
+
+                try {
+                    // Wait for Supabase to be ready
+                    let supabase = null;
+                    
+                    if (window.__supabaseClient && typeof window.__supabaseClient.from === 'function') {
+                        supabase = window.__supabaseClient;
+                    } else if (window.Config && typeof window.Config.initSupabase === 'function') {
+                        supabase = window.Config.initSupabase();
+                    }
+
+                    if (!supabase || typeof supabase.from !== 'function') {
+                        throw new Error("Supabase not initialized");
+                    }
+
+                    // Get active wave
+                    const { data: activeWave, error } = await supabase
+                        .from("pengaturan_psb")
+                        .select("tahun_pelajaran, gelombang")
+                        .eq("is_active", true)
+                        .single();
+
+                    if (activeWave && !error) {
+                        // Update title with active wave info
+                        if (titleElement) {
+                            titleElement.textContent = `PSB ${activeWave.tahun_pelajaran} Gelombang ${activeWave.gelombang} — SMK Tahasus Plus Al Mardliyah`;
+                        }
+
+                        // Update page title
+                        document.title = `PSB ${activeWave.tahun_pelajaran} Gel. ${activeWave.gelombang} - SMK Tahasus Plus Al Mardliyah`;
+                    }
+                } catch (error) {
+                    // Keep default title if error occurs
+                } finally {
+                    // Show title with smooth fade-in
+                    if (titleElement) {
+                        setTimeout(() => {
+                            titleElement.style.opacity = "1";
+                        }, 100);
+                    }
+                }
+            }
+
+            async function waitForSupabase() {
+                const maxAttempts = 100;
+                
+                    for (let i = 0; i < maxAttempts; i++) {
+                        // Check for initialized client
+                        if (window.__supabaseClient && typeof window.__supabaseClient.from === 'function') {
+                            return window.__supabaseClient;
+                        }
+
+                        // Try to initialize
+                        if (window.Config && typeof window.Config.initSupabase === 'function') {
+                            const client = window.Config.initSupabase();
+                            if (client && typeof client.from === 'function') {
+                                return client;
+                            }
+                        }
+
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+
+                    return null;
+            }
+
+            // Load on page ready
+            async function loadPageData() {
+                await waitForSupabase();
+                await loadActiveWave();
+            }
+
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", loadPageData);
+            } else {
+                loadPageData();
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,5 @@
+# Cloudflare Pages Redirects
+# Simple redirect rules - no aliases to prevent loops
+
+# Force HTTPS only
+http://:host/*      https://:host/:splat     301!

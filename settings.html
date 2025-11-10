@@ -1,0 +1,1455 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Pengaturan PSB - Admin Dashboard</title>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="public/js/config.js"></script>
+        <script src="public/js/auth.js"></script>
+        <script src="public/js/security.js"></script>
+        <link rel="stylesheet" href="public/css/connection-indicator.css" />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            :root {
+                --bg-primary: #0a0a0a;
+                --bg-secondary: #141414;
+                --bg-tertiary: #1e1e1e;
+                --bg-hover: #252525;
+                --text-primary: #ffffff;
+                --text-secondary: #a0a0a0;
+                --text-muted: #707070;
+                --border-color: #2a2a2a;
+                --accent: #ffffff;
+                --accent-hover: #e0e0e0;
+                --danger: #ff4444;
+                --success: #44ff44;
+                --warning: #ffaa44;
+            }
+
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Oxygen, Ubuntu, Cantarell, sans-serif;
+                background: var(--bg-primary);
+                color: var(--text-primary);
+                line-height: 1.6;
+                min-height: 100vh;
+            }
+
+            header {
+                background: var(--bg-secondary);
+                border-bottom: 1px solid var(--border-color);
+                padding: 1.5rem 2rem;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                backdrop-filter: blur(10px);
+            }
+
+            .header-content {
+                max-width: 1400px;
+                margin: 0 auto;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .header-title h1 {
+                font-size: 1.5rem;
+                font-weight: 600;
+                letter-spacing: -0.02em;
+            }
+
+            .header-title p {
+                color: var(--text-secondary);
+                font-size: 0.875rem;
+                margin-top: 0.25rem;
+            }
+
+            .nav-links {
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+            }
+
+            .nav-links a {
+                padding: 0.5rem 1rem;
+                color: var(--text-secondary);
+                text-decoration: none;
+                border-radius: 6px;
+                transition: all 0.2s;
+                font-size: 0.9375rem;
+            }
+
+            .nav-links a:hover {
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+            }
+
+            .nav-links a.active {
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+            }
+
+            .btn-logout {
+                padding: 0.5rem 1rem;
+                background: var(--bg-tertiary);
+                color: var(--text-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.875rem;
+                transition: all 0.2s;
+            }
+
+            .btn-logout:hover {
+                background: var(--danger);
+                color: var(--text-primary);
+                border-color: var(--danger);
+            }
+
+            main {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 2rem;
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 1.5rem;
+                transition: all 0.3s;
+            }
+
+            .stat-card:hover {
+                border-color: var(--text-muted);
+                transform: translateY(-2px);
+            }
+
+            .stat-label {
+                color: var(--text-secondary);
+                font-size: 0.875rem;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .stat-value {
+                font-size: 2.5rem;
+                font-weight: 700;
+                margin-top: 0.5rem;
+                letter-spacing: -0.02em;
+            }
+
+            .stat-info {
+                font-size: 0.8125rem;
+                color: var(--text-muted);
+                margin-top: 0.5rem;
+            }
+
+            .card {
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .card-header h2 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+            }
+
+            .btn {
+                padding: 0.625rem 1.25rem;
+                border: none;
+                border-radius: 6px;
+                font-size: 0.875rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .btn-primary {
+                background: var(--accent);
+                color: var(--bg-primary);
+            }
+
+            .btn-primary:hover:not(:disabled) {
+                background: var(--accent-hover);
+                transform: translateY(-1px);
+            }
+
+            .btn-success {
+                background: var(--success);
+                color: var(--bg-primary);
+            }
+
+            .btn-success:hover:not(:disabled) {
+                background: #33dd33;
+            }
+
+            .btn-danger {
+                background: var(--danger);
+                color: white;
+            }
+
+            .btn-danger:hover:not(:disabled) {
+                background: #cc0000;
+            }
+
+            .btn-secondary {
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+                border: 1px solid var(--border-color);
+            }
+
+            .btn-secondary:hover:not(:disabled) {
+                background: var(--bg-hover);
+            }
+
+            .btn-sm {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.8125rem;
+            }
+
+            .filter-section {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+                margin-bottom: 1.5rem;
+            }
+
+            .filter-section label {
+                font-size: 0.875rem;
+                color: var(--text-secondary);
+                font-weight: 500;
+            }
+
+            .filter-section select {
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                border: 1px solid var(--border-color);
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+                font-size: 0.875rem;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .filter-section select:focus {
+                outline: none;
+                border-color: var(--text-muted);
+                background: var(--bg-hover);
+            }
+
+            .waves-grid {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .wave-card {
+                background: var(--bg-tertiary);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 1.25rem;
+                transition: all 0.2s;
+            }
+
+            .wave-card:hover {
+                border-color: var(--text-muted);
+            }
+
+            .wave-card.active {
+                border-color: var(--success);
+                background: rgba(68, 255, 68, 0.05);
+            }
+
+            .wave-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 0.75rem;
+            }
+
+            .wave-title {
+                flex: 1;
+            }
+
+            .wave-title h3 {
+                font-size: 1rem;
+                font-weight: 600;
+                margin-bottom: 0.25rem;
+            }
+
+            .badge {
+                display: inline-block;
+                padding: 0.25rem 0.625rem;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.025em;
+            }
+
+            .badge-active {
+                background: rgba(68, 255, 68, 0.15);
+                color: var(--success);
+            }
+
+            .badge-inactive {
+                background: rgba(255, 255, 255, 0.1);
+                color: var(--text-muted);
+            }
+
+            .badge-ongoing {
+                background: rgba(255, 170, 68, 0.15);
+                color: var(--warning);
+            }
+
+            .wave-info {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 0.75rem;
+                margin-bottom: 0.75rem;
+                padding: 0.75rem 0;
+                border-top: 1px solid var(--border-color);
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .info-item {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .info-label {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.025em;
+            }
+
+            .info-value {
+                font-size: 0.875rem;
+                color: var(--text-primary);
+                font-weight: 500;
+            }
+
+            .wave-actions {
+                display: flex;
+                gap: 0.5rem;
+                justify-content: flex-end;
+            }
+
+            .form-group {
+                margin-bottom: 1.25rem;
+            }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: var(--text-secondary);
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                width: 100%;
+                padding: 0.625rem;
+                border-radius: 6px;
+                border: 1px solid var(--border-color);
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+                font-size: 0.875rem;
+                transition: all 0.2s;
+            }
+
+            .form-group input:focus,
+            .form-group select:focus,
+            .form-group textarea:focus {
+                outline: none;
+                border-color: var(--text-muted);
+                background: var(--bg-hover);
+            }
+
+            .form-group small {
+                display: block;
+                margin-top: 0.375rem;
+                font-size: 0.75rem;
+                color: var(--text-muted);
+            }
+
+            .form-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(4px);
+                z-index: 1000;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .modal.show {
+                display: flex;
+            }
+
+            .modal-content {
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                width: 100%;
+                max-width: 600px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .modal-header {
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .modal-header h2 {
+                font-size: 1.25rem;
+                font-weight: 600;
+            }
+
+            .close-btn {
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: var(--text-secondary);
+                padding: 0;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 6px;
+                transition: all 0.2s;
+            }
+
+            .close-btn:hover {
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+            }
+
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .modal-footer {
+                padding: 1.5rem;
+                border-top: 1px solid var(--border-color);
+                display: flex;
+                gap: 0.75rem;
+                justify-content: flex-end;
+            }
+
+            .loading {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(2px);
+                z-index: 9999;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .loading.show {
+                display: flex;
+            }
+
+            .spinner {
+                width: 48px;
+                height: 48px;
+                border: 4px solid var(--border-color);
+                border-top-color: var(--accent);
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .toast {
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                color: var(--text-primary);
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                display: none;
+                align-items: center;
+                gap: 0.75rem;
+                min-width: 300px;
+            }
+
+            .toast.show {
+                display: flex;
+                animation: slideIn 0.3s ease-out;
+            }
+
+            .toast.success {
+                border-left: 4px solid var(--success);
+            }
+
+            .toast.error {
+                border-left: 4px solid var(--danger);
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 3rem 1rem;
+                color: var(--text-muted);
+            }
+
+            .empty-state-icon {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+                opacity: 0.5;
+            }
+
+            .empty-state-title {
+                font-size: 1.125rem;
+                font-weight: 600;
+                color: var(--text-secondary);
+                margin-bottom: 0.5rem;
+            }
+
+            .empty-state-text {
+                font-size: 0.875rem;
+            }
+
+            @media (max-width: 768px) {
+                .header-content {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 1rem;
+                }
+
+                .nav-links {
+                    width: 100%;
+                    flex-wrap: wrap;
+                }
+
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .form-row {
+                    grid-template-columns: 1fr;
+                }
+
+                main {
+                    padding: 1rem;
+                }
+
+                .card {
+                    padding: 1rem;
+                }
+
+                .card-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 1rem;
+                }
+
+                .wave-header {
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+
+                .wave-actions {
+                    width: 100%;
+                    justify-content: flex-start;
+                }
+
+                .wave-actions .btn {
+                    flex: 1;
+                }
+
+                .toast {
+                    bottom: 1rem;
+                    right: 1rem;
+                    left: 1rem;
+                    min-width: auto;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Pengaturan PSB</h1>
+                    <p>Kelola tahun pelajaran dan gelombang pendaftaran</p>
+                </div>
+                <div class="nav-links">
+                    <a href="dashboard.html">Dashboard</a>
+                    <a href="settings.html" class="active">Pengaturan</a>
+                    <button class="btn-logout" onclick="handleLogout()">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Tahun Pelajaran</div>
+                    <div class="stat-value" id="totalYears">0</div>
+                    <div class="stat-info">Data tersedia</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Gelombang</div>
+                    <div class="stat-value" id="totalWaves">0</div>
+                    <div class="stat-info">Semua tahun pelajaran</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Gelombang Aktif</div>
+                    <div class="stat-value" id="activeWaves">0</div>
+                    <div class="stat-info" id="activeWaveInfo">Tidak ada</div>
+                </div>
+            </div>
+
+            <!-- Waves Management Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Daftar Gelombang</h2>
+                    <button
+                        id="btnAddWave"
+                        class="btn btn-primary"
+                        onclick="openAddWaveModal()"
+                    >
+                        + Tambah Gelombang
+                    </button>
+                </div>
+
+                <div class="filter-section">
+                    <label for="filterYearSelect">Filter Tahun:</label>
+                    <select id="filterYearSelect" onchange="loadWaves()">
+                        <option value="">Semua Tahun</option>
+                    </select>
+                </div>
+
+                <div class="waves-grid" id="wavesContainer">
+                    <!-- Waves will be rendered here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Add/Edit Wave Modal -->
+        <div class="modal" id="waveModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Tambah Gelombang</h2>
+                    <button class="close-btn" onclick="closeModal('waveModal')">
+                        &times;
+                    </button>
+                </div>
+                <form id="waveForm" onsubmit="saveWave(event)">
+                    <input type="hidden" id="waveId" name="id" />
+                    <div class="modal-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tahunPelajaran"
+                                    >Tahun Pelajaran *</label
+                                >
+                                <input
+                                    type="text"
+                                    id="tahunPelajaran"
+                                    name="tahun_pelajaran"
+                                    required
+                                    placeholder="2026/2027"
+                                    pattern="[0-9]{4}/[0-9]{4}"
+                                />
+                                <small
+                                    >Format: YYYY/YYYY (contoh:
+                                    2026/2027)</small
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="gelombang">Gelombang *</label>
+                                <select
+                                    id="gelombang"
+                                    name="gelombang"
+                                    required
+                                >
+                                    <option value="">Pilih Gelombang</option>
+                                    <option value="1">Gelombang 1</option>
+                                    <option value="2">Gelombang 2</option>
+                                    <option value="3">Gelombang 3</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tanggalMulai"
+                                    >Tanggal Mulai *</label
+                                >
+                                <input
+                                    type="date"
+                                    id="tanggalMulai"
+                                    name="tanggal_mulai"
+                                    required
+                                    min="2020-01-01"
+                                    max="2030-12-31"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label for="tanggalSelesai"
+                                    >Tanggal Selesai *</label
+                                >
+                                <input
+                                    type="date"
+                                    id="tanggalSelesai"
+                                    name="tanggal_selesai"
+                                    required
+                                    min="2020-01-01"
+                                    max="2030-12-31"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="keterangan">Keterangan</label>
+                            <textarea
+                                id="keterangan"
+                                name="keterangan"
+                                rows="3"
+                                placeholder="Informasi tambahan tentang gelombang ini"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="closeModal('waveModal')"
+                        >
+                            Batal
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div class="toast" id="toast"></div>
+
+        <script>
+            // DEBUG: Page load tracking
+            console.log('[Settings] Script starting...', {
+                url: window.location.href,
+                pathname: window.location.pathname,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Initialize Supabase
+            let supabase;
+            let allWaves = [];
+            let allYears = [];
+
+            // Initialize
+            async function init() {
+                // Read resolved config and log masked in console
+                const SUPABASE_URL = window.Config ? window.Config.get("SUPABASE_URL") : null;
+                const SUPABASE_KEY = window.Config ? window.Config.get("SUPABASE_ANON_KEY") : null;
+
+                console.groupCollapsed("[Settings] Supabase Config");
+                try {
+                    const localRaw = localStorage.getItem("supabase_config");
+                    const localCfg = localRaw ? JSON.parse(localRaw) : null;
+                    console.log("- localStorage.supabase_config:", {
+                        url: localCfg?.url || "(none)",
+                        key: localCfg?.key ? maskKey(localCfg.key) : "(none)",
+                    });
+                } catch (_) {
+                    console.log("- localStorage.supabase_config: (invalid JSON)");
+                }
+                console.log("- resolved URL:", SUPABASE_URL || "(missing)");
+                console.log(
+                    "- resolved anon key:",
+                    SUPABASE_KEY ? maskKey(SUPABASE_KEY) : "(missing)",
+                );
+                console.groupEnd();
+
+                if (!SUPABASE_URL || !SUPABASE_KEY) {
+                    updateConnectionStatus("missing-config");
+                    insertConfigWarningBanner();
+                    disableSettingsActions(true);
+                    // Render empty state
+                    const container = document.getElementById("wavesContainer");
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">⚙️</div>
+                                <div class="empty-state-title">Konfigurasi Supabase belum diset</div>
+                                <div class="empty-state-text">Buka halaman <a href="/public/setup-config.html" style="color: var(--text-primary); text-decoration: underline;">Setup Config</a> lalu isi URL & Anon Key untuk mode pengembangan.</div>
+                            </div>
+                        `;
+                    }
+                    return; // stop here until config is provided
+                }
+
+                try {
+                    // Create Supabase client directly if not already initialized
+                    if (!window.__supabaseClient && window.supabase && typeof window.supabase.createClient === 'function') {
+                        window.__supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    }
+                    
+                    supabase = window.__supabaseClient;
+                    if (!supabase || typeof supabase.from !== 'function') {
+                        throw new Error('Supabase client not properly initialized');
+                    }
+                    
+                    console.log("[Settings] Supabase client ready");
+                    updateConnectionStatus("connected");
+                } catch (e) {
+                    updateConnectionStatus("error", e?.message || "Create client failed");
+                    insertConfigWarningBanner();
+                    disableSettingsActions(true);
+                    return;
+                }
+
+                await loadYears();
+                await loadWaves();
+                await loadStats();
+            }
+
+            function maskKey(key) {
+                if (!key || typeof key !== "string") return "";
+                if (key.length <= 8) return key[0] + "***" + key[key.length - 1];
+                return key.slice(0, 4) + "***" + key.slice(-4);
+            }
+
+            async function loadYears() {
+                try {
+                    const { data, error } = await supabase
+                        .from("pengaturan_psb")
+                        .select("tahun_pelajaran")
+                        .order("tahun_pelajaran", { ascending: false });
+
+                    if (error) throw error;
+
+                    allYears = [
+                        ...new Set(data.map((item) => item.tahun_pelajaran)),
+                    ];
+
+                    const select = document.getElementById("filterYearSelect");
+                    select.innerHTML = '<option value="">Semua Tahun</option>';
+
+                    allYears.forEach((year) => {
+                        const option = document.createElement("option");
+                        option.value = year;
+                        option.textContent = year;
+                        select.appendChild(option);
+                    });
+                } catch (error) {
+                    showToast("Gagal memuat tahun pelajaran: " + error.message, "error");
+                }
+            }
+
+            async function loadWaves() {
+                showLoading(true);
+                try {
+                    const filterYear =
+                        document.getElementById("filterYearSelect")?.value;
+
+                    let query = supabase
+                        .from("pengaturan_psb")
+                        .select("*")
+                        .order("tahun_pelajaran", { ascending: false })
+                        .order("gelombang", { ascending: true });
+
+                    if (filterYear) {
+                        query = query.eq("tahun_pelajaran", filterYear);
+                    }
+
+                    const { data, error } = await query;
+
+                    if (error) throw error;
+
+                    allWaves = data || [];
+                    renderWaves();
+                } catch (error) {
+                    showToast("Gagal memuat gelombang: " + error.message, "error");
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            async function loadRegistrationCounts() {
+                try {
+                    const { count, error } = await supabase
+                        .from("registrasi_siswa")
+                        .select("*", { count: "exact", head: true });
+
+                    return count || 0;
+                } catch (error) {
+                    return 0;
+                }
+            }
+
+            function renderWaves() {
+                const container = document.getElementById("wavesContainer");
+
+                if (allWaves.length === 0) {
+                    container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-title">Belum ada gelombang</div>
+                        <div class="empty-state-text">Klik tombol "Tambah Gelombang" untuk membuat gelombang baru</div>
+                    </div>
+                `;
+                    return;
+                }
+
+                container.innerHTML = allWaves
+                    .map((wave) => {
+                        const safe = {
+                            id: String(wave.id),
+                            tahun: wave.tahun_pelajaran || "-",
+                            gelombang: String(wave.gelombang || "-"),
+                            keterangan: wave.keterangan || "-",
+                            count: String(wave.count || 0),
+                        };
+
+                        const startDate = new Date(
+                            wave.tanggal_mulai,
+                        ).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                        });
+                        const endDate = new Date(
+                            wave.tanggal_selesai,
+                        ).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                        });
+
+                        const today = new Date();
+                        const start = new Date(wave.tanggal_mulai);
+                        const end = new Date(wave.tanggal_selesai);
+                        const isOngoing = today >= start && today <= end;
+
+                        let statusBadge = "";
+                        if (wave.is_active) {
+                            statusBadge =
+                                '<span class="badge badge-active">Aktif</span>';
+                        } else {
+                            statusBadge =
+                                '<span class="badge badge-inactive">Nonaktif</span>';
+                        }
+
+                        if (isOngoing) {
+                            statusBadge +=
+                                ' <span class="badge badge-ongoing">Berlangsung</span>';
+                        }
+
+                        return `
+                    <div class="wave-card ${wave.is_active ? "active" : ""}">
+                        <div class="wave-header">
+                            <div class="wave-title">
+                                <h3>${safe.tahun} - Gelombang ${safe.gelombang}</h3>
+                                ${statusBadge}
+                            </div>
+                        </div>
+                        <div class="wave-info">
+                            <div class="info-item">
+                                <div class="info-label">Tanggal Mulai</div>
+                                <div class="info-value">${startDate}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Tanggal Selesai</div>
+                                <div class="info-value">${endDate}</div>
+                            </div>
+                        </div>
+                        ${wave.keterangan ? `<div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem;">${safe.keterangan}</div>` : ""}
+                        <div class="wave-actions">
+                            <button class="btn btn-sm btn-secondary" onclick='editWave(${JSON.stringify(wave)})'>Edit</button>
+                            ${
+                                !wave.is_active
+                                    ? `<button class="btn btn-sm btn-success" onclick="toggleActive('${safe.id}', true)">Aktifkan</button>`
+                                    : `<button class="btn btn-sm btn-secondary" onclick="toggleActive('${safe.id}', false)">Nonaktifkan</button>`
+                            }
+                            <button class="btn btn-sm btn-danger" onclick="deleteWave('${safe.id}')">Hapus</button>
+                        </div>
+                    </div>
+                `;
+                    })
+                    .join("");
+            }
+
+            async function loadStats() {
+                try {
+                    const { data: activeWave, error: activeError } =
+                        await supabase
+                            .from("pengaturan_psb")
+                            .select("*")
+                            .eq("is_active", true)
+                            .single();
+
+                    document.getElementById("totalYears").textContent =
+                        allYears.length;
+                    document.getElementById("totalWaves").textContent =
+                        allWaves.length;
+                    document.getElementById("activeWaves").textContent =
+                        activeWave ? 1 : 0;
+
+                    if (activeWave) {
+                        const today = new Date();
+                        const start = new Date(activeWave.tanggal_mulai);
+                        const end = new Date(activeWave.tanggal_selesai);
+
+                        let status = "Aktif";
+                        if (today >= start && today <= end) {
+                            status = "Sedang berlangsung";
+                        }
+
+                        document.getElementById("activeWaveInfo").textContent =
+                            `${activeWave.tahun_pelajaran} Gel. ${activeWave.gelombang} - ${status}`;
+                    }
+                } catch (error) {
+                    showToast("Gagal memuat statistik: " + error.message, "error");
+                }
+            }
+
+            // Insert config warning banner (dev only)
+            function insertConfigWarningBanner() {
+                if (document.getElementById("devConfigBanner")) return;
+                const mainEl = document.querySelector("main");
+                if (!mainEl) return;
+                const banner = document.createElement("div");
+                banner.id = "devConfigBanner";
+                banner.style.margin = "0 0 1rem 0";
+                banner.style.padding = "0.75rem 1rem";
+                banner.style.border = "1px solid var(--border-color)";
+                banner.style.background = "var(--bg-tertiary)";
+                banner.style.borderRadius = "8px";
+                banner.style.color = "var(--text-secondary)";
+                banner.innerHTML = `
+                    <strong>Development config:</strong> Supabase belum terkonfigurasi. Buka <a href="/public/setup-config.html" style="color: var(--text-primary); text-decoration: underline;">Setup Config</a> untuk mengisi URL & Anon Key.
+                `;
+                mainEl.prepend(banner);
+            }
+
+            function updateConnectionStatus(state, msg) {
+                const el = document.getElementById("connectionStatus");
+                if (!el) return;
+                el.classList.remove("badge-active", "badge-inactive");
+                if (state === "connected") {
+                    el.textContent = "Supabase: Connected";
+                    el.classList.add("badge-active");
+                    el.title = "Terkoneksi ke Supabase";
+                } else if (state === "missing-config") {
+                    el.textContent = "Supabase: Missing config";
+                    el.classList.add("badge-inactive");
+                    el.title = "Set URL & Anon Key terlebih dahulu";
+                } else {
+                    el.textContent = "Supabase: Error";
+                    el.classList.add("badge-inactive");
+                    el.title = msg || "Terjadi kesalahan koneksi";
+                }
+            }
+
+            function disableSettingsActions(disabled) {
+                const addBtn = document.getElementById("btnAddWave");
+                if (addBtn) {
+                    addBtn.disabled = !!disabled;
+                    addBtn.title = disabled
+                        ? "Tidak tersedia tanpa konfigurasi Supabase"
+                        : "";
+                }
+                const filterSelect = document.getElementById("filterYearSelect");
+                if (filterSelect) filterSelect.disabled = !!disabled;
+            }
+
+            function openAddWaveModal() {
+                document.getElementById("modalTitle").textContent =
+                    "Tambah Gelombang";
+                document.getElementById("waveForm").reset();
+                document.getElementById("waveId").value = "";
+
+                // Set default tahun pelajaran to current academic year
+                const currentYear = new Date().getFullYear();
+                const nextYear = currentYear + 1;
+                document.getElementById("tahunPelajaran").value =
+                    `${currentYear}/${nextYear}`;
+
+                // Remove any previous error states
+                clearFormErrors();
+
+                openModal("waveModal");
+            }
+
+            // Edit wave
+            function editWave(wave) {
+                document.getElementById("modalTitle").textContent =
+                    "Edit Gelombang";
+                document.getElementById("waveId").value = wave.id;
+                document.getElementById("tahunPelajaran").value =
+                    wave.tahun_pelajaran;
+                document.getElementById("gelombang").value = wave.gelombang;
+                document.getElementById("tanggalMulai").value =
+                    wave.tanggal_mulai;
+                document.getElementById("tanggalSelesai").value =
+                    wave.tanggal_selesai;
+                document.getElementById("keterangan").value =
+                    wave.keterangan || "";
+
+                openModal("waveModal");
+            }
+
+            // Save wave (add or update)
+            async function saveWave(event) {
+                event.preventDefault();
+                showLoading(true);
+
+                try {
+                    const form = event.target;
+                    const id = document.getElementById("waveId").value;
+
+                    // Get and validate form values
+                    const tahunPelajaran = form.tahun_pelajaran.value.trim();
+                    const gelombang = form.gelombang.value;
+                    const tanggalMulai = form.tanggal_mulai.value;
+                    const tanggalSelesai = form.tanggal_selesai.value;
+                    const keterangan = form.keterangan.value.trim();
+
+                    // Clear previous errors
+                    clearFormErrors();
+
+                    // Validate tahun pelajaran format
+                    const tahunPattern = /^\d{4}\/\d{4}$/;
+                    if (!tahunPattern.test(tahunPelajaran)) {
+                        highlightError("tahunPelajaran");
+                        showToast(
+                            "Format tahun pelajaran harus YYYY/YYYY (contoh: 2026/2027)",
+                            "error",
+                        );
+                        showLoading(false);
+                        return;
+                    }
+
+                    // Validate gelombang selected
+                    if (!gelombang || gelombang === "") {
+                        highlightError("gelombang");
+                        showToast("Pilih gelombang terlebih dahulu", "error");
+                        showLoading(false);
+                        return;
+                    }
+
+                    // Validate dates
+                    if (!tanggalMulai || !tanggalSelesai) {
+                        if (!tanggalMulai) highlightError("tanggalMulai");
+                        if (!tanggalSelesai) highlightError("tanggalSelesai");
+                        showToast(
+                            "Tanggal mulai dan selesai harus diisi",
+                            "error",
+                        );
+                        showLoading(false);
+                        return;
+                    }
+
+                    // Validate date range
+                    const startDate = new Date(tanggalMulai);
+                    const endDate = new Date(tanggalSelesai);
+
+                    if (endDate <= startDate) {
+                        highlightError("tanggalSelesai");
+                        showToast(
+                            "Tanggal selesai harus setelah tanggal mulai",
+                            "error",
+                        );
+                        showLoading(false);
+                        return;
+                    }
+
+                    // Check for duplicate wave (same tahun_pelajaran and gelombang)
+                    if (!id) {
+                        const { data: existing, error: checkError } =
+                            await supabase
+                                .from("pengaturan_psb")
+                                .select("id")
+                                .eq("tahun_pelajaran", tahunPelajaran)
+                                .eq("gelombang", parseInt(gelombang))
+                                .maybeSingle();
+
+                        if (existing) {
+                            showToast(
+                                `Gelombang ${gelombang} untuk tahun ${tahunPelajaran} sudah ada`,
+                                "error",
+                            );
+                            showLoading(false);
+                            return;
+                        }
+                    }
+
+                    const waveData = {
+                        tahun_pelajaran: tahunPelajaran,
+                        gelombang: parseInt(gelombang),
+                        tanggal_mulai: tanggalMulai,
+                        tanggal_selesai: tanggalSelesai,
+                        keterangan: keterangan || null,
+                    };
+
+                    let result;
+                    if (id) {
+                        result = await supabase
+                            .from("pengaturan_psb")
+                            .update(waveData)
+                            .eq("id", id);
+                    } else {
+                        result = await supabase
+                            .from("pengaturan_psb")
+                            .insert([waveData]);
+                    }
+
+                    if (result.error) {
+                        throw result.error;
+                    }
+
+                    showToast(
+                        id
+                            ? "Gelombang berhasil diperbarui"
+                            : "Gelombang berhasil ditambahkan",
+                        "success",
+                    );
+                    closeModal("waveModal");
+                    await loadYears();
+                    await loadWaves();
+                    await loadStats();
+                } catch (error) {
+                    showToast("Gagal menyimpan gelombang: " + error.message, "error");
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            async function toggleActive(id, isActive) {
+                showLoading(true);
+                try {
+                    if (isActive) {
+                        await supabase
+                            .from("pengaturan_psb")
+                            .update({ is_active: false })
+                            .neq("id", id);
+                    }
+
+                    const { error } = await supabase
+                        .from("pengaturan_psb")
+                        .update({ is_active: isActive })
+                        .eq("id", id);
+
+                    if (error) throw error;
+
+                    showToast(
+                        isActive
+                            ? "Gelombang berhasil diaktifkan"
+                            : "Gelombang berhasil dinonaktifkan",
+                        "success",
+                    );
+                    await loadWaves();
+                    await loadStats();
+                } catch (error) {
+                    showToast("Gagal mengubah status gelombang: " + error.message, "error");
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            async function deleteWave(id) {
+                if (
+                    !confirm("Apakah Anda yakin ingin menghapus gelombang ini?")
+                )
+                    return;
+
+                showLoading(true);
+                try {
+                    const { error } = await supabase
+                        .from("pengaturan_psb")
+                        .delete()
+                        .eq("id", id);
+
+                    if (error) throw error;
+
+                    showToast("Gelombang berhasil dihapus", "success");
+                    await loadYears();
+                    await loadWaves();
+                    await loadStats();
+                } catch (error) {
+                    showToast("Gagal menghapus gelombang: " + error.message, "error");
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            function openModal(modalId) {
+                document.getElementById(modalId).classList.add("show");
+            }
+
+            function closeModal(modalId) {
+                document.getElementById(modalId).classList.remove("show");
+            }
+
+            function showLoading(show) {
+                document
+                    .getElementById("loading")
+                    .classList.toggle("show", show);
+            }
+
+            function showToast(message, type = "success") {
+                const toast = document.getElementById("toast");
+                toast.textContent = message;
+                toast.className = `toast ${type} show`;
+
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 3000);
+            }
+
+            // Clear form errors
+            function clearFormErrors() {
+                const inputs = document.querySelectorAll(
+                    "#waveForm input, #waveForm select, #waveForm textarea",
+                );
+                inputs.forEach((input) => {
+                    input.style.borderColor = "";
+                });
+            }
+
+            // Highlight error field
+            function highlightError(fieldId) {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.style.borderColor = "var(--danger)";
+                    field.focus();
+                    setTimeout(() => {
+                        field.style.borderColor = "";
+                    }, 3000);
+                }
+            }
+            
+
+            // ========================================
+            // ========================================
+            // INITIALIZATION
+            // ========================================
+            
+            // Auto init settings (no auth required)
+            window.addEventListener("DOMContentLoaded", function () {
+                console.log('[Settings] DOMContentLoaded - initializing...');
+                init();
+            });
+            
+            // DEBUG: Monitor for any unexpected redirects
+            window.addEventListener('beforeunload', function(e) {
+                console.log('[Settings] Page unloading...', {
+                    newURL: e.newURL || 'unknown',
+                    timestamp: new Date().toISOString()
+                });
+            });
+
+            // Handle logout
+            async function handleLogout() {
+                if (!confirm('Apakah Anda yakin ingin logout?')) {
+                    return;
+                }
+                
+                try {
+                    showLoading(true);
+                    await Auth.logout();
+                } catch (error) {
+                    console.error('[Settings] Logout error:', error);
+                    showToast('Gagal logout: ' + error.message, 'error');
+                    showLoading(false);
+                }
+            }
+        </script>
+    </body>
+</html>

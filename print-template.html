@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cetak Formulir — PSB SMK Tahasus Plus Al Mardliyah</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; color:#111; margin:20px; }
+    .kop { text-align:center; margin-bottom:12px; }
+    .kop img { height:70px; vertical-align:middle; }
+    .kop h1 { margin:5px 0 0 0; font-size:18px; }
+    .kop p { margin:2px 0; font-size:13px; }
+    .meta { margin-top:12px; margin-bottom:8px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    td { padding:6px 8px; vertical-align:top; border-bottom:1px solid #e6e6e6; }
+    td.label { width:35%; font-weight:700; }
+    .actions { margin-top:14px; display:flex; gap:8px; }
+    .btn { padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:#fff; cursor:pointer; }
+    .btn-primary { background:#0f9d58; color:#fff; border-color:#0f9d58; }
+    @media print {
+      .no-print { display:none; }
+      body { margin:6mm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="kop">
+    <img src="public/assets/logo.png" alt="Logo" />
+    <h1>SMK Tahasus Plus Al Mardliyah</h1>
+    <p>Jalan Laut Mororejo Kaliwungu Kabupaten Kendal</p>
+    <hr style="margin-top:12px;" />
+  </div>
+
+  <div id="content">
+    <p class="meta" id="formTitle"><strong>Formulir Pendaftaran</strong></p>
+    <div id="formTableContainer">Memuat data...</div>
+  </div>
+
+  <div style="margin-top:25px;">
+    <p style="font-weight:700;">Persetujuan Orang Tua / Wali</p>
+    <p>Dengan ini saya menyatakan bahwa data yang diberikan adalah benar dan memberikan persetujuan atas pendaftaran anak/anak didik yang tercantum di atas.</p>
+
+    <div style="display:flex; gap:28px; margin-top:18px; align-items:flex-start;">
+      <div style="flex:0 0 200px;">
+        <div style="height:90px; border-bottom:1px solid #000;"></div>
+        <div style="margin-top:6px; font-size:13px;">(Tanda Tangan & Nama Terang)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions no-print">
+    <button id="printBtn" class="btn btn-primary">Cetak</button>
+    <button id="closeBtn" class="btn">Tutup</button>
+  </div>
+
+  <script>
+    // Read payload from sessionStorage
+    (function(){
+      const raw = sessionStorage.getItem('psb_print_payload');
+      let payload = {};
+      if (!raw) {
+        document.getElementById('formTableContainer').textContent = 'Tidak ada data cetak. Kembali ke form dan klik Cetak lagi.';
+        return;
+      }
+      try { payload = JSON.parse(raw); } catch(e) { document.getElementById('formTableContainer').textContent = 'Data cetak rusak.'; return; }
+
+      // Build table
+      const container = document.createElement('div');
+      const table = document.createElement('table');
+      const tbody = document.createElement('tbody');
+
+      // Build heading title: move tahun_pelajaran & gelombang above the table
+      const formTitleEl = document.getElementById('formTitle');
+      const tahun = payload.tahun_pelajaran || '';
+      const gel = payload.gelombang || '';
+      if (formTitleEl) {
+        let title = 'Formulir PSB';
+        if (tahun) title += ' Tahun ' + tahun;
+        if (gel !== '' && gel !== undefined) title += ' Gelombang ' + gel;
+        formTitleEl.innerHTML = '<strong>' + title + '</strong>';
+      }
+
+      // Label overrides and fields to exclude from the table
+      const excludeKeys = new Set(['tahun_pelajaran','gelombang','status']);
+      const labelMap = {
+        nomor_registrasi: 'Nomor Registrasi',
+        nama_lengkap: 'Nama Lengkap',
+        jenis_kelamin: 'Jenis Kelamin',
+        nik_siswa: 'NIK',
+        nisn: 'NISN',
+        tempat_tanggal_lahir: 'Tempat, Tanggal Lahir',
+        tempat_lahir: 'Tempat, Tanggal Lahir',
+        tanggal_lahir: 'Tempat, Tanggal Lahir',
+        asal_sekolah: 'Asal Sekolah',
+        anak_ke: 'Anak Ke-',
+        jumlah_saudara: 'Jumlah Saudara',
+        tinggi_berat: 'Tinggi Badan Berat Badan',
+        tinggi_badan: 'Tinggi Badan Berat Badan',
+        berat_badan: 'Tinggi Badan Berat Badan',
+        hp: 'Nomer Handphone',
+        alamat_lengkap: 'Alamat',
+        no_kk: 'No KK',
+        nama_ayah: 'Nama Ayah/Wali',
+        nama_wali: 'Nama Ayah/Wali',
+        nik_ayah: 'NIK Ayah/Wali',
+        nik_wali: 'NIK Ayah/Wali',
+        nama_ibu: 'Nama Ibu/Wali',
+        nik_ibu: 'NIK Ibu/Wali',
+        program_utama: 'Program Keahlian',
+        pengetahuan_program: 'Pengetahuan Program'
+      };
+
+      // Ordered keys for the table
+      const orderedKeys = [
+        'nomor_registrasi',
+        'nama_lengkap',
+        'jenis_kelamin',
+        'nik_siswa',
+        'nisn',
+        'tempat_tanggal_lahir',
+        'asal_sekolah',
+        'anak_ke',
+        'jumlah_saudara',
+        'tinggi_berat',
+        'hp',
+        'alamat_lengkap',
+        'no_kk',
+        'nama_ayah',
+        'nik_ayah',
+        'nama_ibu',
+        'nik_ibu',
+        'program_utama',
+        'pengetahuan_program'
+      ];
+
+      orderedKeys.forEach(key => {
+        // Special handling for composite fields
+        let value = payload[key];
+        if (key === 'tempat_tanggal_lahir') {
+          const tempat = payload.tempat_lahir || '';
+          const tanggal = payload.tanggal_lahir || '';
+          value = (tempat && tanggal) ? tempat + ', ' + tanggal : tempat || tanggal || '-';
+        }
+        if (key === 'tinggi_berat') {
+          const tinggi = payload.tinggi_badan || '';
+          const berat = payload.berat_badan || '';
+          value = (tinggi && berat) ? tinggi + ' cm / ' + berat + ' kg' : tinggi || berat || '-';
+        }
+        if (key === 'nama_ayah') {
+          value = payload.nama_ayah || payload.nama_wali || '-';
+        }
+        if (key === 'nik_ayah') {
+          value = payload.nik_ayah || payload.nik_wali || '-';
+        }
+        if (key === 'nama_ibu') {
+          value = payload.nama_ibu || '-';
+        }
+        if (key === 'nik_ibu') {
+          value = payload.nik_ibu || '-';
+        }
+        // Only show if not excluded
+        if (!excludeKeys.has(key)) {
+          const label = labelMap[key] || key.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+          const tr = document.createElement('tr');
+          const td1 = document.createElement('td'); td1.className='label'; td1.textContent = label;
+          const td2 = document.createElement('td'); td2.textContent = (value === undefined || value === null || String(value).trim() === '') ? '-' : value;
+          tr.appendChild(td1); tr.appendChild(td2); tbody.appendChild(tr);
+        }
+      });
+
+      table.appendChild(tbody);
+      container.appendChild(table);
+      const holder = document.getElementById('formTableContainer');
+      holder.innerHTML = '';
+      holder.appendChild(container);
+
+      // Fill signature meta if available
+      const sigNameEl = document.getElementById('sig_name');
+      const sigRelationEl = document.getElementById('sig_relation');
+      const sigDateEl = document.getElementById('sig_date');
+      // Prefer explicit guardian fields then parents
+      const guardianName = payload.nama_wali || payload.nama_ayah || payload.nama_ibu || payload.nama_orangtua || payload.nama_orang_tua || '';
+      if (guardianName && sigNameEl) sigNameEl.textContent = guardianName;
+      if (payload.hubungan && sigRelationEl) sigRelationEl.textContent = payload.hubungan;
+      if (sigDateEl) sigDateEl.textContent = new Date().toLocaleDateString('id-ID');
+
+      // Print button
+      document.getElementById('printBtn').addEventListener('click', function(){
+        window.print();
+      });
+      document.getElementById('closeBtn').addEventListener('click', function(){ window.close(); });
+
+      // Auto-open print dialog on load
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          window.print();
+        }, 600);
+      });
+    })();
+  </script>
+</body>
+</html>
