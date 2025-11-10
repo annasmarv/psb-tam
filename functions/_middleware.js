@@ -10,23 +10,20 @@ export async function onRequest(context) {
   const { request, env, next } = context;
   
   const url = new URL(request.url);
-  
-  // Debug logging (remove in production)
-  console.log('[Middleware] Request:', url.pathname);
+  try {
+    // Get the response
+    const response = await next();
 
-  // Get the response
-  const response = await next();
+    // Only inject into HTML pages
+    const contentType = (response.headers && response.headers.get ? response.headers.get('content-type') : '') || '';
+    if (!contentType.includes('text/html')) {
+      return response;
+    }
 
-  // Only inject into HTML pages
-  const contentType = response.headers.get('content-type') || '';
-  if (!contentType.includes('text/html')) {
-    return response;
-  }
-
-  // Get environment variables
-  const envVars = {
-    SUPABASE_URL: env.SUPABASE_URL || 'https://nuuvatfivugzkfwuzlbn.supabase.co',
-    SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51dXZhdGZpdnVnemtmd3V6bGJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzOTg3ODQsImV4cCI6MjA3Nzk3NDc4NH0.JuzKhrLzeH9ZVz1nW6bwj0Ob6uIPRHS941Txnn-MtvU',
+    // Get environment variables
+    const envVars = {
+    SUPABASE_URL: env.SUPABASE_URL || '',
+    SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY || '',
     APP_NAME: env.APP_NAME || 'PSB SMK Tahasus Plus Al Mardliyah',
     APP_ENV: env.APP_ENV || 'production'
   };
@@ -48,23 +45,45 @@ export async function onRequest(context) {
     </script>
   `;
 
-  // Get response text
-  let html = await response.text();
+    // Get response text (use clone to avoid consuming original stream)
+    let html = '';
+    try {
+      const cloned = response.clone();
+      html = await cloned.text();
+    } catch (e) {
+      // If body can't be read as text, return original response
+      return response;
+    }
 
-  // Inject script before closing </head> tag or at start of <body>
-  if (html.includes('</head>')) {
-    html = html.replace('</head>', `${envScript}\n</head>`);
-  } else if (html.includes('<body')) {
-    html = html.replace('<body', `${envScript}\n<body`);
-  } else {
-    // Fallback: prepend to HTML
-    html = envScript + html;
+    // Inject script before closing </head> tag or at start of <body>
+    if (html.includes('</head>')) {
+      html = html.replace('</head>', `${envScript}\n</head>`);
+    } else if (html.includes('<body')) {
+      html = html.replace('<body', `${envScript}\n<body`);
+    } else {
+      // Fallback: prepend to HTML
+      html = envScript + html;
+    }
+
+    // Copy headers to new Headers instance to avoid locked headers issues
+    const newHeaders = new Headers(response.headers || {});
+    // Ensure content-type remains text/html
+    if (!newHeaders.get('content-type')) {
+      newHeaders.set('content-type', 'text/html; charset=utf-8');
+    }
+
+    return new Response(html, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders
+    });
+  } catch (err) {
+    // On any unexpected error, return a safe 500 response or delegate to next
+    try {
+      const fallback = await next();
+      return fallback;
+    } catch (_) {
+      return new Response('Internal Server Error', { status: 500 });
+    }
   }
-
-  // Return modified response
-  return new Response(html, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: response.headers
-  });
 }
