@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://nuuvatfivugzkfwuzlbn.supabase.co;">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://nuuvatfivugzkfwuzlbn.supabase.co https://cdn.jsdelivr.net;">
         <title>Dashboard PSB - Admin Panel</title>
         <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1027,7 +1027,6 @@
         <div class="toast" id="toast"></div>
 
         <script>
-            let supabase;
             let allData = [];
             let filteredData = [];
             let currentPage = 1;
@@ -1038,6 +1037,11 @@
             let allGelombang = [];
             let currentFilterYear = "";
             let currentFilterGelombang = "";
+
+            // Get Supabase client from global
+            function getSupabaseClient() {
+                return window.__supabaseClient;
+            }
 
             // Wait for Supabase auth to be ready
             async function waitForSupabase() {
@@ -1093,9 +1097,9 @@
                         return;
                     }
 
-                    supabase = await waitForSupabase();
+                    const client = await waitForSupabase();
                     
-                    if (!supabase || typeof supabase.from !== 'function') {
+                    if (!client || typeof client.from !== 'function') {
                         throw new Error('Supabase client not available');
                     }
 
@@ -1111,7 +1115,7 @@
             // Load active wave and set filter
             async function loadActiveWave() {
                 try {
-                    const { data: activeWave, error } = await supabase
+                    const { data: activeWave, error } = await getSupabaseClient()
                         .from("pengaturan_psb")
                         .select("tahun_pelajaran, gelombang")
                         .eq("is_active", true)
@@ -1132,7 +1136,7 @@
             async function loadData() {
                 showLoading(true);
                 try {
-                    const { data, error } = await supabase
+                    const { data, error } = await getSupabaseClient()
                         .from("registrasi_siswa")
                         .select("*")
                         .order("created_at", { ascending: false });
@@ -1515,7 +1519,7 @@
 
                 try {
                     const ids = Array.from(selectedItems);
-                    const { error } = await supabase
+                    const { error } = await getSupabaseClient()
                         .from("registrasi_siswa")
                         .update({ status: status })
                         .in("id", ids);
@@ -1555,7 +1559,7 @@
                 try {
                     const ids = Array.from(selectedItems);
 
-                    const { data, error } = await supabase
+                    const { data, error } = await getSupabaseClient()
                         .from("registrasi_siswa")
                         .delete()
                         .in("id", ids)
@@ -1777,9 +1781,8 @@
                 if (!currentDetailId) return;
 
                 const status = document.getElementById("modalStatus").value;
-
                 try {
-                    const { error } = await supabase
+                    const { error } = await getSupabaseClient()
                         .from("registrasi_siswa")
                         .update({ status: status })
                         .eq("id", currentDetailId);
@@ -1822,8 +1825,7 @@
                 showLoading(true);
                 try {
                     const idStr = String(id);
-
-                    const { data, error } = await supabase
+                    const { data, error } = await getSupabaseClient()
                         .from("registrasi_siswa")
                         .delete()
                         .eq("id", idStr)
