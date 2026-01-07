@@ -829,9 +829,13 @@
             });
             
             // Initialize Supabase
-            let supabase;
             let allWaves = [];
             let allYears = [];
+
+            // Get Supabase client from global
+            function getSupabaseClient() {
+                return window.__supabaseClient;
+            }
 
             // Initialize
             async function init() {
@@ -881,8 +885,8 @@
                         window.__supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                     }
                     
-                    supabase = window.__supabaseClient;
-                    if (!supabase || typeof supabase.from !== 'function') {
+                    const client = getSupabaseClient();
+                    if (!client || typeof client.from !== 'function') {
                         throw new Error('Supabase client not properly initialized');
                     }
                     
@@ -908,7 +912,7 @@
 
             async function loadYears() {
                 try {
-                    const { data, error } = await supabase
+                    const { data, error } = await getSupabaseClient()
                         .from("pengaturan_psb")
                         .select("tahun_pelajaran")
                         .order("tahun_pelajaran", { ascending: false });
@@ -939,7 +943,7 @@
                     const filterYear =
                         document.getElementById("filterYearSelect")?.value;
 
-                    let query = supabase
+                    let query = getSupabaseClient()
                         .from("pengaturan_psb")
                         .select("*")
                         .order("tahun_pelajaran", { ascending: false })
@@ -964,7 +968,7 @@
 
             async function loadRegistrationCounts() {
                 try {
-                    const { count, error } = await supabase
+                    const { count, error } = await getSupabaseClient()
                         .from("registrasi_siswa")
                         .select("*", { count: "exact", head: true });
 
@@ -1069,7 +1073,7 @@
             async function loadStats() {
                 try {
                     const { data: activeWave, error: activeError } =
-                        await supabase
+                        await getSupabaseClient()
                             .from("pengaturan_psb")
                             .select("*")
                             .eq("is_active", true)
@@ -1254,7 +1258,7 @@
                     // Check for duplicate wave (same tahun_pelajaran and gelombang)
                     if (!id) {
                         const { data: existing, error: checkError } =
-                            await supabase
+                            await getSupabaseClient()
                                 .from("pengaturan_psb")
                                 .select("id")
                                 .eq("tahun_pelajaran", tahunPelajaran)
@@ -1281,12 +1285,12 @@
 
                     let result;
                     if (id) {
-                        result = await supabase
+                        result = await getSupabaseClient()
                             .from("pengaturan_psb")
                             .update(waveData)
                             .eq("id", id);
                     } else {
-                        result = await supabase
+                        result = await getSupabaseClient()
                             .from("pengaturan_psb")
                             .insert([waveData]);
                     }
@@ -1316,13 +1320,13 @@
                 showLoading(true);
                 try {
                     if (isActive) {
-                        await supabase
+                        await getSupabaseClient()
                             .from("pengaturan_psb")
                             .update({ is_active: false })
                             .neq("id", id);
                     }
 
-                    const { error } = await supabase
+                    const { error } = await getSupabaseClient()
                         .from("pengaturan_psb")
                         .update({ is_active: isActive })
                         .eq("id", id);
@@ -1352,7 +1356,7 @@
 
                 showLoading(true);
                 try {
-                    const { error } = await supabase
+                    const { error } = await getSupabaseClient()
                         .from("pengaturan_psb")
                         .delete()
                         .eq("id", id);
