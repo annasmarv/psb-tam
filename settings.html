@@ -978,6 +978,24 @@
                 }
             }
 
+            // Map to store wave objects by ID, avoids embedding raw JSON in onclick attributes
+            const waveMap = {};
+
+            function editWaveById(id) {
+                const wave = waveMap[id];
+                if (wave) editWave(wave);
+            }
+
+            // Sanitize string to prevent XSS when inserting into innerHTML
+            function escapeHtml(str) {
+                return String(str)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#39;");
+            }
+
             function renderWaves() {
                 const container = document.getElementById("wavesContainer");
 
@@ -994,12 +1012,13 @@
 
                 container.innerHTML = allWaves
                     .map((wave) => {
+                        waveMap[wave.id] = wave;
                         const safe = {
-                            id: String(wave.id),
-                            tahun: wave.tahun_pelajaran || "-",
-                            gelombang: String(wave.gelombang || "-"),
-                            keterangan: wave.keterangan || "-",
-                            count: String(wave.count || 0),
+                            id: escapeHtml(String(wave.id)),
+                            tahun: escapeHtml(wave.tahun_pelajaran || "-"),
+                            gelombang: escapeHtml(String(wave.gelombang || "-")),
+                            keterangan: escapeHtml(wave.keterangan || ""),
+                            count: escapeHtml(String(wave.count || 0)),
                         };
 
                         const startDate = new Date(
@@ -1056,7 +1075,7 @@
                         </div>
                         ${wave.keterangan ? `<div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem;">${safe.keterangan}</div>` : ""}
                         <div class="wave-actions">
-                            <button class="btn btn-sm btn-secondary" onclick='editWave(${JSON.stringify(wave)})'>Edit</button>
+                            <button class="btn btn-sm btn-secondary" onclick="editWaveById('${safe.id}')">Edit</button>
                             ${
                                 !wave.is_active
                                     ? `<button class="btn btn-sm btn-success" onclick="toggleActive('${safe.id}', true)">Aktifkan</button>`
