@@ -69,10 +69,20 @@
    * Check session and protect pages
    */
   async function protectPage() {
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+    // Immediately hide body on protected pages to prevent content flash
+    if (PROTECTED_PAGES.includes(currentPage)) {
+      document.documentElement.style.visibility = 'hidden';
+    }
+
     const supabase = await ensureSupabase();
-    
+
     if (!supabase || typeof supabase.auth.getSession !== 'function') {
       console.error('[Auth] Supabase auth not available');
+      if (PROTECTED_PAGES.includes(currentPage)) {
+        redirectToLogin();
+      }
       return false;
     }
 
@@ -81,10 +91,11 @@
 
       if (error) {
         console.error('[Auth] Session check failed:', error);
+        if (PROTECTED_PAGES.includes(currentPage)) {
+          redirectToLogin();
+        }
         return false;
       }
-
-      const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
       // Check if this is a protected page
       if (PROTECTED_PAGES.includes(currentPage)) {
@@ -93,6 +104,8 @@
           redirectToLogin();
           return false;
         }
+        // Auth confirmed — reveal the page
+        document.documentElement.style.visibility = '';
         console.log('[Auth] Session valid, page protected');
         return true;
       }
@@ -107,6 +120,9 @@
       return true;
     } catch (error) {
       console.error('[Auth] Error in protectPage:', error);
+      if (PROTECTED_PAGES.includes(currentPage)) {
+        redirectToLogin();
+      }
       return false;
     }
   }
