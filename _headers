@@ -21,18 +21,19 @@
   # Cache Control for HTML (no cache, always revalidate)
   Cache-Control: public, max-age=0, must-revalidate
 
-# Static Assets - Aggressive Caching
-/public/*
+# Static Assets - Aggressive Caching (images, fonts only)
+/public/assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-# CSS Files
-/*.css
-  Cache-Control: public, max-age=31536000, immutable
+# CSS Files - short cache, must revalidate
+/public/css/*
+  Cache-Control: public, max-age=0, must-revalidate
   Content-Type: text/css; charset=utf-8
 
-# JavaScript Files
-/*.js
-  Cache-Control: public, max-age=31536000, immutable
+# JavaScript Files - NO immutable cache, always revalidate
+/public/js/*
+  Cache-Control: public, max-age=0, must-revalidate
+  Content-Type: application/javascript; charset=utf-8
   Content-Type: application/javascript; charset=utf-8
 
 # Images
