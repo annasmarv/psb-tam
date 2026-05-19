@@ -79,77 +79,61 @@
   }
 
   /**
-   * Check session and protect pages
-   * Uses onAuthStateChange (Supabase recommended) so token refresh is handled automatically.
+   * Reveal the protected page after auth is confirmed.
+   */
+  function revealPage() {
+    document.documentElement.style.visibility = '';
+    const guard = document.getElementById('auth-guard');
+    if (guard) guard.remove();
+    console.log('[Auth] Page revealed');
+  }
+
+  /**
+   * Check session and protect pages.
+   * Uses getSession() which reads localStorage AND auto-refreshes expired tokens.
    */
   async function protectPage() {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const isProtected = PROTECTED_PAGES.includes(currentPage);
-    const isLoginPage = currentPage === 'login.html' || currentPage === '' || currentPage === '/';
+    const isLoginPage = currentPage === 'login.html';
 
-    // Ensure hidden while we verify (belt-and-suspenders alongside the inline CSS)
     if (isProtected) {
       document.documentElement.style.visibility = 'hidden';
     }
 
     const supabase = await ensureSupabase();
-
     if (!supabase) {
-      console.error('[Auth] Supabase not available');
+      console.error('[Auth] Supabase unavailable');
       if (isProtected) redirectToLogin();
       return false;
     }
 
-    return new Promise((resolve) => {
-      let settled = false;
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      const session = data?.session ?? null;
 
-      function finish(session) {
-        if (settled) return;
-        settled = true;
-
-        if (isProtected) {
-          if (!session) {
-            console.log('[Auth] No session — redirecting to base URL');
-            redirectToLogin();
-            resolve(false);
-          } else {
-            // Remove inline hide + delete the <style id="auth-guard"> tag so the
-            // CSS rule is fully gone and the page becomes visible.
-            document.documentElement.style.visibility = '';
-            const guard = document.getElementById('auth-guard');
-            if (guard) guard.remove();
-            console.log('[Auth] Session confirmed — page visible');
-            resolve(true);
-          }
-        } else if (isLoginPage && session) {
-          console.log('[Auth] Already authenticated — redirecting to dashboard');
-          window.location.replace('dashboard.html');
-          resolve(false);
-        } else {
-          resolve(true);
+      if (isProtected) {
+        if (error || !session) {
+          console.log('[Auth] No session — redirecting to home');
+          redirectToLogin();
+          return false;
         }
+        revealPage();
+        return true;
       }
 
-      // onAuthStateChange fires immediately with INITIAL_SESSION and handles
-      // token refresh automatically — this is the Supabase-recommended approach.
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          subscription.unsubscribe();
-          finish(session);
-        }
-      );
+      if (isLoginPage && session && !error) {
+        console.log('[Auth] Already logged in — redirecting to dashboard');
+        window.location.replace('dashboard.html');
+        return false;
+      }
 
-      // Safety timeout: if onAuthStateChange never fires (e.g. network down),
-      // redirect after 8 seconds rather than leaving the page stuck invisible.
-      setTimeout(() => {
-        if (!settled) {
-          console.warn('[Auth] Auth check timed out');
-          if (isProtected) redirectToLogin();
-          settled = true;
-          resolve(false);
-        }
-      }, 8000);
-    });
+      return true;
+    } catch (err) {
+      console.error('[Auth] protectPage error:', err);
+      if (isProtected) redirectToLogin();
+      return false;
+    }
   }
 
   /**
