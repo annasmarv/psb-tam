@@ -5,12 +5,24 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://nuuvatfivugzkfwuzlbn.supabase.co https://cdn.jsdelivr.net;">
         <title>Dashboard PSB - Admin Panel</title>
-        <!-- Auth guard: hides page BEFORE any render, dioverride auth.js setelah sesi valid -->
-        <style id="auth-guard">html { visibility: hidden; }</style>
+        <!-- Inline auth guard: sync redirect jika tidak ada token, hide jika ada -->
+        <script>
+        !function(){
+          var p=['dashboard.html','settings.html'];
+          var page=(location.pathname.split('/').pop()||'index.html').split('?')[0];
+          if(!p.includes(page))return;
+          document.documentElement.style.visibility='hidden';
+          try{
+            if(!localStorage.getItem('sb-nuuvatfivugzkfwuzlbn-auth-token')){
+              location.replace('/');
+            }
+          }catch(e){}
+        }();
+        </script>
         <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-        <script src="public/js/config.js?v=4"></script>
-        <script src="public/js/auth.js?v=4"></script>
+        <script src="public/js/config.js?v=5"></script>
+        <script src="public/js/auth.js?v=5"></script>
         <script src="public/js/security.js"></script>
         <link rel="stylesheet" href="public/css/connection-indicator.css" />
         <style>

@@ -80,11 +80,10 @@
 
   /**
    * Reveal the protected page after auth is confirmed.
+   * Hanya perlu clear inline style — pendekatan inline script tidak pakai CSS rule.
    */
   function revealPage() {
     document.documentElement.style.visibility = '';
-    const guard = document.getElementById('auth-guard');
-    if (guard) guard.remove();
     console.log('[Auth] Page revealed');
   }
 
@@ -109,20 +108,31 @@
     }
 
     try {
-      const { data, error } = await supabase.auth.getSession();
-      const session = data?.session ?? null;
+      // Failsafe: jika getSession() tidak selesai dalam 8 detik, reveal page
+      // (token ada di localStorage tapi mungkin ada masalah refresh)
+      const timeoutResult = { data: { session: '__timeout__' }, error: null };
+      const sessionResult = await Promise.race([
+        supabase.auth.getSession(),
+        new Promise(resolve => setTimeout(() => resolve(timeoutResult), 8000))
+      ]);
+
+      const isTimeout = sessionResult.data?.session === '__timeout__';
+      const { data, error } = sessionResult;
+      const session = isTimeout ? '__timeout__' : (data?.session ?? null);
 
       if (isProtected) {
-        if (error || !session) {
+        if (!isTimeout && (error || !session)) {
           console.log('[Auth] No session — redirecting to home');
           redirectToLogin();
           return false;
         }
+        // Session valid atau timeout (fail open) — tampilkan halaman
+        if (isTimeout) console.warn('[Auth] getSession() timeout — revealing page (fail open)');
         revealPage();
         return true;
       }
 
-      if (isLoginPage && session && !error) {
+      if (isLoginPage && !isTimeout && session && !error) {
         console.log('[Auth] Already logged in — redirecting to dashboard');
         window.location.replace('dashboard.html');
         return false;
