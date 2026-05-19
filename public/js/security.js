@@ -181,9 +181,8 @@
     inactivityTimer = setTimeout(async () => {
       await logSecurityEvent("AUTO_LOGOUT", { reason: "inactivity_timeout" });
       if (window.Auth && typeof window.Auth.logout === "function") {
-        await window.Auth.logout();
         alert("Anda telah logout otomatis karena tidak aktif selama 30 menit.");
-        window.location.href = "/public/login.html";
+        await window.Auth.logout();
       }
     }, INACTIVITY_TIMEOUT);
   }

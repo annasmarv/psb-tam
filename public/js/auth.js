@@ -38,12 +38,12 @@
   }
 
   /**
-   * Helper: Redirect to login page
+   * Helper: Redirect to base URL (login)
    */
   function redirectToLogin() {
     if (canRedirect()) {
-      console.log('[Auth] Redirecting to login...');
-      window.location.href = 'login.html';
+      console.log('[Auth] Redirecting to base URL...');
+      window.location.replace('/');
     }
   }
 
@@ -78,53 +78,72 @@
 
   /**
    * Check session and protect pages
+   * Uses onAuthStateChange (Supabase recommended) so token refresh is handled automatically.
    */
   async function protectPage() {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const isProtected = PROTECTED_PAGES.includes(currentPage);
+    const isLoginPage = currentPage === 'login.html' || currentPage === '' || currentPage === '/';
 
-    // Ensure hidden (covers edge cases where script ran before html element existed)
+    // Ensure hidden while we verify (belt-and-suspenders alongside the inline CSS)
     if (isProtected) {
       document.documentElement.style.visibility = 'hidden';
     }
 
     const supabase = await ensureSupabase();
 
-    if (!supabase || typeof supabase.auth.getUser !== 'function') {
-      console.error('[Auth] Supabase auth not available');
+    if (!supabase) {
+      console.error('[Auth] Supabase not available');
       if (isProtected) redirectToLogin();
       return false;
     }
 
-    try {
-      // getUser() validates the JWT with Supabase server (not just localStorage)
-      const { data: { user }, error } = await supabase.auth.getUser();
+    return new Promise((resolve) => {
+      let settled = false;
 
-      if (isProtected) {
-        if (error || !user) {
-          console.log('[Auth] No valid user, redirecting to login...');
-          redirectToLogin();
-          return false;
+      function finish(session) {
+        if (settled) return;
+        settled = true;
+
+        if (isProtected) {
+          if (!session) {
+            console.log('[Auth] No session — redirecting to base URL');
+            redirectToLogin();
+            resolve(false);
+          } else {
+            document.documentElement.style.visibility = '';
+            console.log('[Auth] Session confirmed — page visible');
+            resolve(true);
+          }
+        } else if (isLoginPage && session) {
+          console.log('[Auth] Already authenticated — redirecting to dashboard');
+          window.location.replace('dashboard.html');
+          resolve(false);
+        } else {
+          resolve(true);
         }
-        // Auth server-confirmed — reveal the page
-        document.documentElement.style.visibility = '';
-        console.log('[Auth] User verified, access granted');
-        return true;
       }
 
-      // If on login page and already authenticated, go to dashboard
-      if (currentPage === 'login.html' && !error && user) {
-        console.log('[Auth] Already authenticated, redirecting to dashboard...');
-        window.location.href = 'dashboard.html';
-        return false;
-      }
+      // onAuthStateChange fires immediately with INITIAL_SESSION and handles
+      // token refresh automatically — this is the Supabase-recommended approach.
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          subscription.unsubscribe();
+          finish(session);
+        }
+      );
 
-      return true;
-    } catch (err) {
-      console.error('[Auth] Error in protectPage:', err);
-      if (isProtected) redirectToLogin();
-      return false;
-    }
+      // Safety timeout: if onAuthStateChange never fires (e.g. network down),
+      // redirect after 8 seconds rather than leaving the page stuck invisible.
+      setTimeout(() => {
+        if (!settled) {
+          console.warn('[Auth] Auth check timed out');
+          if (isProtected) redirectToLogin();
+          settled = true;
+          resolve(false);
+        }
+      }, 8000);
+    });
   }
 
   /**
@@ -176,17 +195,17 @@
     async logout() {
       const supabase = await ensureSupabase();
       if (!supabase) {
-        window.location.href = 'login.html';
+        window.location.replace('/');
         return;
       }
 
       try {
         await supabase.auth.signOut();
         localStorage.removeItem('psb_user');
-        window.location.href = 'login.html';
+        window.location.replace('/');
       } catch (error) {
         console.error('[Auth] Logout error:', error);
-        window.location.href = 'login.html';
+        window.location.replace('/');
       }
     },
 
