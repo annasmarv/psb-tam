@@ -20,6 +20,8 @@
   (function immediateHide() {
     const page = window.location.pathname.split('/').pop() || 'index.html';
     if (PROTECTED_PAGES.includes(page)) {
+      // Belt-and-suspenders: also set inline style in case the <style id="auth-guard">
+      // tag hasn't been added to the HTML yet (e.g. during development).
       document.documentElement.style.visibility = 'hidden';
     }
   })();
@@ -111,7 +113,11 @@
             redirectToLogin();
             resolve(false);
           } else {
+            // Remove inline hide + delete the <style id="auth-guard"> tag so the
+            // CSS rule is fully gone and the page becomes visible.
             document.documentElement.style.visibility = '';
+            const guard = document.getElementById('auth-guard');
+            if (guard) guard.remove();
             console.log('[Auth] Session confirmed — page visible');
             resolve(true);
           }
