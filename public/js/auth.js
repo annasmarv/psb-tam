@@ -13,6 +13,17 @@
   // Protected pages
   const PROTECTED_PAGES = ['dashboard.html', 'settings.html'];
 
+  // ─── SYNCHRONOUS GUARD ───────────────────────────────────────────────────
+  // Runs immediately when auth.js is parsed in <head>, BEFORE the browser
+  // renders any body content.  Keeps the page invisible until the async
+  // session check either confirms the user or redirects to login.
+  (function immediateHide() {
+    const page = window.location.pathname.split('/').pop() || 'index.html';
+    if (PROTECTED_PAGES.includes(page)) {
+      document.documentElement.style.visibility = 'hidden';
+    }
+  })();
+
   /**
    * Helper: Can we redirect right now?
    */
@@ -70,59 +81,48 @@
    */
   async function protectPage() {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const isProtected = PROTECTED_PAGES.includes(currentPage);
 
-    // Immediately hide body on protected pages to prevent content flash
-    if (PROTECTED_PAGES.includes(currentPage)) {
+    // Ensure hidden (covers edge cases where script ran before html element existed)
+    if (isProtected) {
       document.documentElement.style.visibility = 'hidden';
     }
 
     const supabase = await ensureSupabase();
 
-    if (!supabase || typeof supabase.auth.getSession !== 'function') {
+    if (!supabase || typeof supabase.auth.getUser !== 'function') {
       console.error('[Auth] Supabase auth not available');
-      if (PROTECTED_PAGES.includes(currentPage)) {
-        redirectToLogin();
-      }
+      if (isProtected) redirectToLogin();
       return false;
     }
 
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      // getUser() validates the JWT with Supabase server (not just localStorage)
+      const { data: { user }, error } = await supabase.auth.getUser();
 
-      if (error) {
-        console.error('[Auth] Session check failed:', error);
-        if (PROTECTED_PAGES.includes(currentPage)) {
-          redirectToLogin();
-        }
-        return false;
-      }
-
-      // Check if this is a protected page
-      if (PROTECTED_PAGES.includes(currentPage)) {
-        if (!session) {
-          console.log('[Auth] No session, redirecting to login...');
+      if (isProtected) {
+        if (error || !user) {
+          console.log('[Auth] No valid user, redirecting to login...');
           redirectToLogin();
           return false;
         }
-        // Auth confirmed — reveal the page
+        // Auth server-confirmed — reveal the page
         document.documentElement.style.visibility = '';
-        console.log('[Auth] Session valid, page protected');
+        console.log('[Auth] User verified, access granted');
         return true;
       }
 
       // If on login page and already authenticated, go to dashboard
-      if (currentPage === 'login.html' && session) {
+      if (currentPage === 'login.html' && !error && user) {
         console.log('[Auth] Already authenticated, redirecting to dashboard...');
         window.location.href = 'dashboard.html';
         return false;
       }
 
       return true;
-    } catch (error) {
-      console.error('[Auth] Error in protectPage:', error);
-      if (PROTECTED_PAGES.includes(currentPage)) {
-        redirectToLogin();
-      }
+    } catch (err) {
+      console.error('[Auth] Error in protectPage:', err);
+      if (isProtected) redirectToLogin();
       return false;
     }
   }
