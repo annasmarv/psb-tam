@@ -80,10 +80,12 @@
 
   /**
    * Reveal the protected page after auth is confirmed.
-   * Hanya perlu clear inline style — pendekatan inline script tidak pakai CSS rule.
+   * Dispatch 'psb:auth-ok' agar page logic (init, load data) baru berjalan
+   * SETELAH sesi terverifikasi — mencegah data tampil sebelum auth selesai.
    */
   function revealPage() {
     document.documentElement.style.visibility = '';
+    document.dispatchEvent(new CustomEvent('psb:auth-ok'));
     console.log('[Auth] Page revealed');
   }
 

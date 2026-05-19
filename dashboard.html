@@ -1972,9 +1972,15 @@
                     });
                 });
 
-                console.log('[Dashboard] Initializing...');
-                init();
+                console.log('[Dashboard] DOM ready, menunggu konfirmasi auth...');
+                // init() dipanggil HANYA setelah auth.js konfirmasi sesi valid
             });
+
+            // Hanya load data setelah auth terkonfirmasi
+            document.addEventListener('psb:auth-ok', function() {
+                console.log('[Dashboard] Auth OK — initializing...');
+                init();
+            }, { once: true });
 
             // Handle logout
             async function handleLogout() {

@@ -1459,11 +1459,17 @@
             // INITIALIZATION
             // ========================================
             
-            // Auto init settings (no auth required)
+            // Auto init settings — hanya setelah auth terkonfirmasi
             window.addEventListener("DOMContentLoaded", function () {
-                console.log('[Settings] DOMContentLoaded - initializing...');
-                init();
+                console.log('[Settings] DOM ready, menunggu konfirmasi auth...');
+                // init() dipindah ke psb:auth-ok
             });
+
+            // Hanya load data setelah auth terkonfirmasi
+            document.addEventListener('psb:auth-ok', function() {
+                console.log('[Settings] Auth OK — initializing...');
+                init();
+            }, { once: true });
             
             // DEBUG: Monitor for any unexpected redirects
             window.addEventListener('beforeunload', function(e) {
