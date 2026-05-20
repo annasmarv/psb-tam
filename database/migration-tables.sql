@@ -80,7 +80,10 @@ CREATE TABLE IF NOT EXISTS registrasi_siswa (
 
     -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+    -- Soft Delete
+    deleted_at TIMESTAMPTZ DEFAULT NULL
 );
 
 -- Index untuk performa
@@ -92,6 +95,8 @@ CREATE INDEX IF NOT EXISTS idx_registrasi_status
     ON registrasi_siswa(status);
 CREATE INDEX IF NOT EXISTS idx_registrasi_created
     ON registrasi_siswa(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_registrasi_deleted
+    ON registrasi_siswa(deleted_at) WHERE deleted_at IS NULL;
 
 -- =====================================================
 -- 2. TABEL PENGATURAN_PSB
@@ -206,6 +211,7 @@ SELECT
     COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved,
     COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected
 FROM registrasi_siswa
+WHERE deleted_at IS NULL
 GROUP BY tahun_pelajaran, gelombang, program_keahlian
 ORDER BY tahun_pelajaran DESC, gelombang ASC, program_keahlian;
 
@@ -220,6 +226,7 @@ SELECT
     COUNT(CASE WHEN program_keahlian = 'tataboga' THEN 1 END) as tataboga,
     COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved
 FROM registrasi_siswa
+WHERE deleted_at IS NULL
 GROUP BY tahun_pelajaran, gelombang
 ORDER BY tahun_pelajaran DESC, gelombang ASC;
 
@@ -261,3 +268,51 @@ SELECT COUNT(*) as total_gelombang FROM pengaturan_psb;
 -- 3. Test form pendaftaran
 --
 -- =====================================================
+
+-- =====================================================
+-- MIGRATION: TAMBAH SOFT DELETE (jalankan jika tabel
+-- sudah ada sebelum kolom deleted_at ditambahkan)
+-- =====================================================
+
+-- Tambah kolom deleted_at jika belum ada
+ALTER TABLE registrasi_siswa
+    ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
+
+-- Tambah index untuk performa query soft delete
+CREATE INDEX IF NOT EXISTS idx_registrasi_deleted
+    ON registrasi_siswa(deleted_at) WHERE deleted_at IS NULL;
+
+-- Perbarui view statistik agar tidak ikut hitung data terhapus
+CREATE OR REPLACE VIEW statistik_program AS
+SELECT
+    tahun_pelajaran,
+    gelombang,
+    program_keahlian,
+    COUNT(*) as total_pendaftar,
+    COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
+    COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved,
+    COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected
+FROM registrasi_siswa
+WHERE deleted_at IS NULL
+GROUP BY tahun_pelajaran, gelombang, program_keahlian
+ORDER BY tahun_pelajaran DESC, gelombang ASC, program_keahlian;
+
+CREATE OR REPLACE VIEW statistik_tahun AS
+SELECT
+    tahun_pelajaran,
+    gelombang,
+    COUNT(*) as total_pendaftar,
+    COUNT(CASE WHEN program_keahlian = 'tjkt' THEN 1 END) as tjkt,
+    COUNT(CASE WHEN program_keahlian = 'tatabusana' THEN 1 END) as tatabusana,
+    COUNT(CASE WHEN program_keahlian = 'tataboga' THEN 1 END) as tataboga,
+    COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved
+FROM registrasi_siswa
+WHERE deleted_at IS NULL
+GROUP BY tahun_pelajaran, gelombang
+ORDER BY tahun_pelajaran DESC, gelombang ASC;
+
+-- Verifikasi
+SELECT column_name, data_type, column_default
+FROM information_schema.columns
+WHERE table_name = 'registrasi_siswa'
+  AND column_name = 'deleted_at';
