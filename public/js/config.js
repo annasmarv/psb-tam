@@ -1,10 +1,19 @@
 (function () {
   "use strict";
 
+  // DEV_CONFIG hanya digunakan saat localhost/development.
+  // Produksi WAJIB menggunakan window.__ENV__ yang diinjeksi oleh _middleware.js
+  // dari Cloudflare Pages environment variables.
+  // JANGAN isi nilai ini untuk produksi — biarkan kosong.
   const DEV_CONFIG = {
-    SUPABASE_URL: "https://nuuvatfivugzkfwuzlbn.supabase.co",
-    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51dXZhdGZpdnVnemtmd3V6bGJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzOTg3ODQsImV4cCI6MjA3Nzk3NDc4NH0.JuzKhrLzeH9ZVz1nW6bwj0Ob6uIPRHS941Txnn-MtvU"
+    SUPABASE_URL: "",
+    SUPABASE_ANON_KEY: ""
   };
+
+  const IS_DEV = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+     window.location.hostname === '127.0.0.1' ||
+     window.location.hostname === '');
 
   function waitForSupabaseLib() {
     return new Promise((resolve) => {
@@ -30,21 +39,29 @@
 
   window.Config = {
     get(key) {
+      // 1. Prioritas utama: window.__ENV__ dari Cloudflare Pages middleware
       if (window.__ENV__ && window.__ENV__[key]) {
         return window.__ENV__[key];
       }
 
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (parsed[key]) return parsed[key];
-        } catch {
-          return stored;
+      // 2. localStorage hanya boleh digunakan di localhost/development
+      // (mencegah manipulasi credentials oleh pihak luar di produksi)
+      if (IS_DEV) {
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed[key]) return parsed[key];
+          } catch {
+            return stored;
+          }
         }
+
+        // 3. DEV_CONFIG hanya di localhost (dan saat kosong pun tidak masalah)
+        if (DEV_CONFIG[key]) return DEV_CONFIG[key];
       }
 
-      return DEV_CONFIG[key] || "";
+      return "";
     },
 
     getSupabaseConfig() {

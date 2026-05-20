@@ -31,17 +31,8 @@ export async function onRequest(context) {
   // Create inline script to inject
   const envScript = `
     <script>
-      // Environment variables injected by Cloudflare Pages
       window.__ENV__ = ${JSON.stringify(envVars)};
-
-      // Also set to window.ENV for backward compatibility
       window.ENV = window.__ENV__;
-
-      // Log for debugging
-      if (window.location.hostname.includes('pages.dev') || window.location.hostname === 'localhost') {
-        console.log('[Middleware] Environment variables loaded');
-        console.log('[Middleware] Current path:', window.location.pathname);
-      }
     </script>
   `;
 
