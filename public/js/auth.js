@@ -10,18 +10,26 @@
   let lastRedirectTime = 0;
   const REDIRECT_COOLDOWN = 2000;
 
-  // Protected pages
-  const PROTECTED_PAGES = ['dashboard.html', 'settings.html'];
+  // Protected pages (tanpa ekstensi, karena Cloudflare Pages strip .html dari URL)
+  const PROTECTED_PAGES = ['dashboard', 'settings'];
+  const LOGIN_PAGES = ['login', 'index'];
+
+  /**
+   * Normalisasi nama halaman: strip ekstensi .html dan query string.
+   * Cloudflare Pages serve dashboard.html di /dashboard (tanpa .html).
+   */
+  function getPageName() {
+    var raw = window.location.pathname.split('/').pop() || 'index';
+    raw = raw.split('?')[0].split('#')[0];
+    return raw.replace(/\.html$/i, '') || 'index';
+  }
 
   // ─── SYNCHRONOUS GUARD ───────────────────────────────────────────────────
   // Runs immediately when auth.js is parsed in <head>, BEFORE the browser
   // renders any body content.  Keeps the page invisible until the async
   // session check either confirms the user or redirects to login.
   (function immediateHide() {
-    const page = window.location.pathname.split('/').pop() || 'index.html';
-    if (PROTECTED_PAGES.includes(page)) {
-      // Belt-and-suspenders: also set inline style in case the <style id="auth-guard">
-      // tag hasn't been added to the HTML yet (e.g. during development).
+    if (PROTECTED_PAGES.includes(getPageName())) {
       document.documentElement.style.visibility = 'hidden';
     }
   })();
@@ -94,9 +102,9 @@
    * Uses getSession() which reads localStorage AND auto-refreshes expired tokens.
    */
   async function protectPage() {
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const currentPage = getPageName();
     const isProtected = PROTECTED_PAGES.includes(currentPage);
-    const isLoginPage = currentPage === 'login.html';
+    const isLoginPage = LOGIN_PAGES.includes(currentPage);
 
     if (isProtected) {
       document.documentElement.style.visibility = 'hidden';
