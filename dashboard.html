@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://nuuvatfivugzkfwuzlbn.supabase.co https://cdn.jsdelivr.net;">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net;">
         <title>Dashboard PSB - Admin Panel</title>
         <!-- Inline auth guard: sync redirect jika tidak ada token, hide jika ada -->
         <script>
@@ -15,9 +15,7 @@
           if(!p.includes(page))return;
           document.documentElement.style.visibility='hidden';
           try{
-            if(!localStorage.getItem('sb-nuuvatfivugzkfwuzlbn-auth-token')){
-              location.replace('/');
-            }
+            var _ht=false;try{for(var _i=0;_i<localStorage.length;_i++){var _k=localStorage.key(_i);if(_k&&_k.startsWith('sb-')&&_k.endsWith('-auth-token')){_ht=true;break;}}}catch(_){}if(!_ht){location.replace('/');}
           }catch(e){}
         }();
         </script>
@@ -1104,7 +1102,6 @@
                     const SUPABASE_KEY = window.Config ? window.Config.get("SUPABASE_ANON_KEY") : null;
 
                     if (!SUPABASE_URL || !SUPABASE_KEY) {
-                        console.warn("[Dashboard] Supabase config missing — running in dev fallback mode");
                         insertConfigWarningBanner();
                         allData = [];
                         filteredData = [];
@@ -1119,7 +1116,6 @@
                         throw new Error('Supabase client not available');
                     }
 
-                    console.log("[Dashboard] Supabase ready");
                     await loadActiveWave();
                     await loadData();
                 } catch (error) {
@@ -1140,10 +1136,8 @@
                     if (activeWave && !error) {
                         currentFilterYear = activeWave.tahun_pelajaran;
                         currentFilterGelombang = activeWave.gelombang.toString();
-                        console.log("[Dashboard] Active wave loaded:", { tahun: currentFilterYear, gelombang: currentFilterGelombang });
                     }
                 } catch (error) {
-                    console.warn("[Dashboard] No active wave found:", error.message);
                     currentFilterYear = "";
                     currentFilterGelombang = "";
                 }
@@ -1185,7 +1179,6 @@
 
                     updateStats();
                     renderTable();
-                    console.log("[Dashboard] Data loaded:", { total: allData.length, years: allYears.length, gelombang: allGelombang.length });
                 } catch (error) {
                     console.error("[Dashboard] Load data error:", error);
                     showToast("Gagal memuat data: " + error.message, "error");
@@ -1542,7 +1535,6 @@
 
                     if (error) throw error;
 
-                    console.log("[Dashboard] Bulk status updated:", { count: selectedItems.size, status });
                     showToast(
                         `Berhasil mengubah status ${selectedItems.size} item`,
                         "success",
@@ -1585,7 +1577,6 @@
                         throw error;
                     }
 
-                    console.log("[Dashboard] Bulk delete completed:", { count: ids.length });
                     showToast(
                         `Berhasil menghapus ${ids.length} item`,
                         "success",
@@ -1804,7 +1795,6 @@
 
                     if (error) throw error;
 
-                    console.log("[Dashboard] Single status updated:", { id: currentDetailId, status });
                     showToast("Status berhasil diperbarui", "success");
                     closeModal("detailModal");
                     await loadData();
@@ -1850,7 +1840,6 @@
                         throw error;
                     }
 
-                    console.log("[Dashboard] Single delete completed:", { id: idStr });
                     showToast("Data berhasil dihapus", "success");
                     closeModal("detailModal");
 
@@ -1885,7 +1874,6 @@
                     const fileName = `PSB_Registrasi_${filterYear}_Gel${filterGel}_${new Date().toISOString().split('T')[0]}.xlsx`;
                     XLSX.writeFile(workbook, fileName);
 
-                    console.log("[Dashboard] Export completed:", { rows: filteredData.length, fileName });
                     showToast("Data berhasil diekspor", "success");
                 } catch (error) {
                     console.error("[Dashboard] Export error:", error);
@@ -1974,13 +1962,11 @@
                     });
                 });
 
-                console.log('[Dashboard] DOM ready, menunggu konfirmasi auth...');
                 // init() dipanggil HANYA setelah auth.js konfirmasi sesi valid
             });
 
             // Hanya load data setelah auth terkonfirmasi
             document.addEventListener('psb:auth-ok', function() {
-                console.log('[Dashboard] Auth OK — initializing...');
                 init();
             }, { once: true });
 

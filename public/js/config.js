@@ -23,13 +23,11 @@
       function check() {
         // Supabase v2 CDN creates window.supabase with createClient method
         if (window.supabase && typeof window.supabase.createClient === 'function') {
-          // console.log('[Config] Supabase library loaded');
           resolve();
         } else if (attempts < maxAttempts) {
           attempts++;
           setTimeout(check, 50);
         } else {
-          // console.error('[Config] Supabase library failed to load after 5 seconds');
           resolve();
         }
       }
@@ -80,13 +78,11 @@
       const config = this.getSupabaseConfig();
       
       if (!config.url || !config.key) {
-        // console.error('[Config] Supabase configuration missing');
         return null;
       }
 
       // Check if Supabase library is available (has createClient method)
       if (typeof window.supabase === 'undefined' || typeof window.supabase.createClient !== 'function') {
-        // console.error('[Config] Supabase library not available');
         return null;
       }
 
@@ -95,16 +91,13 @@
         const client = window.supabase.createClient(config.url, config.key);
         
         if (typeof client.from !== 'function') {
-          // console.error('[Config] Invalid Supabase client - .from() method missing');
           return null;
         }
         
         // Store in separate variable to avoid confusion with library
         window.__supabaseClient = client;
-        // console.log('[Config] Supabase initialized');
         return window.__supabaseClient;
       } catch (error) {
-        // console.error('[Config] Initialization failed:', error);
         return null;
       }
     }
@@ -113,7 +106,6 @@
   // Auto-initialize when library is ready
   waitForSupabaseLib().then(() => {
     if (window.supabase && typeof window.supabase.createClient === 'function') {
-      // console.log('[Config] Library ready - auto-initializing client');
       window.Config.initSupabase();
     }
   });

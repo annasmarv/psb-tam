@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://nuuvatfivugzkfwuzlbn.supabase.co https://cdn.jsdelivr.net;">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net;">
         <title>Pengaturan PSB - Admin Dashboard</title>
         <!-- Inline auth guard: sync redirect jika tidak ada token, hide jika ada -->
         <script>
@@ -15,9 +15,7 @@
           if(!p.includes(page))return;
           document.documentElement.style.visibility='hidden';
           try{
-            if(!localStorage.getItem('sb-nuuvatfivugzkfwuzlbn-auth-token')){
-              location.replace('/');
-            }
+            var _ht=false;try{for(var _i=0;_i<localStorage.length;_i++){var _k=localStorage.key(_i);if(_k&&_k.startsWith('sb-')&&_k.endsWith('-auth-token')){_ht=true;break;}}}catch(_){}if(!_ht){location.replace('/');}
           }catch(e){}
         }();
         </script>
@@ -837,14 +835,6 @@
         <div class="toast" id="toast"></div>
 
         <script>
-            // DEBUG: Page load tracking
-            console.log('[Settings] Script starting...', {
-                url: window.location.href,
-                pathname: window.location.pathname,
-                timestamp: new Date().toISOString()
-            });
-            
-            // Initialize Supabase
             let allWaves = [];
             let allYears = [];
 
@@ -855,27 +845,8 @@
 
             // Initialize
             async function init() {
-                // Read resolved config and log masked in console
                 const SUPABASE_URL = window.Config ? window.Config.get("SUPABASE_URL") : null;
                 const SUPABASE_KEY = window.Config ? window.Config.get("SUPABASE_ANON_KEY") : null;
-
-                console.groupCollapsed("[Settings] Supabase Config");
-                try {
-                    const localRaw = localStorage.getItem("supabase_config");
-                    const localCfg = localRaw ? JSON.parse(localRaw) : null;
-                    console.log("- localStorage.supabase_config:", {
-                        url: localCfg?.url || "(none)",
-                        key: localCfg?.key ? maskKey(localCfg.key) : "(none)",
-                    });
-                } catch (_) {
-                    console.log("- localStorage.supabase_config: (invalid JSON)");
-                }
-                console.log("- resolved URL:", SUPABASE_URL || "(missing)");
-                console.log(
-                    "- resolved anon key:",
-                    SUPABASE_KEY ? maskKey(SUPABASE_KEY) : "(missing)",
-                );
-                console.groupEnd();
 
                 if (!SUPABASE_URL || !SUPABASE_KEY) {
                     updateConnectionStatus("missing-config");
@@ -906,7 +877,6 @@
                         throw new Error('Supabase client not properly initialized');
                     }
                     
-                    console.log("[Settings] Supabase client ready");
                     updateConnectionStatus("connected");
                 } catch (e) {
                     updateConnectionStatus("error", e?.message || "Create client failed");
@@ -1463,22 +1433,16 @@
             
             // Auto init settings — hanya setelah auth terkonfirmasi
             window.addEventListener("DOMContentLoaded", function () {
-                console.log('[Settings] DOM ready, menunggu konfirmasi auth...');
                 // init() dipindah ke psb:auth-ok
             });
 
             // Hanya load data setelah auth terkonfirmasi
             document.addEventListener('psb:auth-ok', function() {
-                console.log('[Settings] Auth OK — initializing...');
                 init();
             }, { once: true });
             
             // DEBUG: Monitor for any unexpected redirects
             window.addEventListener('beforeunload', function(e) {
-                console.log('[Settings] Page unloading...', {
-                    newURL: e.newURL || 'unknown',
-                    timestamp: new Date().toISOString()
-                });
             });
 
             // Handle logout

@@ -60,7 +60,7 @@ const SupabaseClient = {
 
       // Validate URL format
       if (!url.includes('supabase.co')) {
-        console.warn('⚠️ Invalid Supabase URL format');
+
         return false;
       }
 
@@ -68,9 +68,6 @@ const SupabaseClient = {
       this.client = window.supabase.createClient(url, key);
       this.initialized = true;
 
-      if (Config?.isDevelopment()) {
-        console.log('✓ Supabase client initialized');
-      }
 
       return true;
     } catch (error) {
@@ -149,10 +146,6 @@ const SupabaseClient = {
       // Prepare data
       const registrationData = this.prepareData(data);
 
-      if (Config?.isDevelopment()) {
-        console.log('Inserting data to Supabase:', registrationData);
-      }
-
       // Insert to database
       const { data: result, error } = await this.client
         .from(tableName)
@@ -166,10 +159,6 @@ const SupabaseClient = {
           message: this.getErrorMessage(error),
           error: error
         };
-      }
-
-      if (Config?.isDevelopment()) {
-        console.log('✓ Data inserted successfully:', result);
       }
 
       return {

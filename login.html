@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="robots" content="noindex, nofollow" />
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://nuuvatfivugzkfwuzlbn.supabase.co https://cdn.jsdelivr.net;">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net;">
         <title>Login Admin - PSB SMK Tahasus Plus Al Mardliyah</title>
 
         <!-- Tailwind CSS -->
@@ -337,7 +337,6 @@
                 // Initialize on load
                 waitForSupabase()
                     .then(() => {
-                        console.log("[Login] Supabase ready");
                     })
                     .catch(err => {
                         console.error("[Login] Failed to initialize:", err);
@@ -385,7 +384,6 @@
                                 localStorage.setItem('sb-remember-me', 'true');
                             }
                             
-                            console.log("[Login] Login successful, redirecting to dashboard");
                             // Redirect to dashboard
                             window.location.href = 'dashboard.html';
                         }

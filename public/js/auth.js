@@ -40,7 +40,6 @@
   function canRedirect() {
     const now = Date.now();
     if (now - lastRedirectTime < REDIRECT_COOLDOWN) {
-      console.warn('[Auth] Redirect blocked - too soon');
       return false;
     }
     lastRedirectTime = now;
@@ -52,7 +51,6 @@
    */
   function redirectToLogin() {
     if (canRedirect()) {
-      console.log('[Auth] Redirecting to base URL...');
       window.location.replace('/');
     }
   }
@@ -94,7 +92,6 @@
   function revealPage() {
     document.documentElement.style.visibility = '';
     document.dispatchEvent(new CustomEvent('psb:auth-ok'));
-    console.log('[Auth] Page revealed');
   }
 
   /**
@@ -132,18 +129,14 @@
 
       if (isProtected) {
         if (!isTimeout && (error || !session)) {
-          console.log('[Auth] No session — redirecting to home');
           redirectToLogin();
           return false;
         }
-        // Session valid atau timeout (fail open) — tampilkan halaman
-        if (isTimeout) console.warn('[Auth] getSession() timeout — revealing page (fail open)');
         revealPage();
         return true;
       }
 
       if (isLoginPage && !isTimeout && session && !error) {
-        console.log('[Auth] Already logged in — redirecting to dashboard');
         window.location.replace('dashboard.html');
         return false;
       }

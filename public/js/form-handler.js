@@ -71,10 +71,6 @@ const FormHandler = {
     // Show first step
     this.showStep(0);
 
-    // Log if development mode
-    if (true) {
-      console.log('✓ FormHandler initialized with', this.totalSteps, 'steps');
-    }
 
     return true;
   },
@@ -333,9 +329,7 @@ const FormHandler = {
       });
 
       // Log restore
-      if (true) {
-        console.log('✓ Form data restored from localStorage');
-      }
+
 
       // Show notification
       this.showNotification('Data berhasil dipulihkan', 'success');
@@ -368,9 +362,6 @@ const FormHandler = {
     const formData = this.getFormData();
     const success = Storage.save(formData);
 
-    if (success && true) {
-      console.log('✓ Auto-saved');
-    }
   },
 
   /**
@@ -441,7 +432,7 @@ const FormHandler = {
             registrationNumber = data[0]?.nomor_registrasi || data[0]?.id;
             submitSuccess = true;
 
-            console.log('✓ Data submitted to Supabase:', data);
+
           } else {
             console.error('Failed to submit to Supabase:', error?.message || 'Unknown error');
             // Show error but don't fail completely
@@ -451,7 +442,7 @@ const FormHandler = {
             );
           }
         } else {
-          console.log('⚠️ Supabase not available, using localStorage only');
+          // Supabase not available
         }
       } catch (supabaseError) {
         console.error('Supabase submission error:', supabaseError);
@@ -538,11 +529,8 @@ const FormHandler = {
       alert('⚠️ ' + message);
     } else if (type === 'success') {
       // Success shown in UI, no alert needed
-      if (Config?.isDevelopment()) {
-        console.log('✓ ' + message);
-      }
     } else {
-      console.log('ℹ️ ' + message);
+      // Info notification
     }
   },
 
@@ -556,9 +544,6 @@ const FormHandler = {
       this.showStep(0);
       this.isSubmitted = false;
 
-      if (Config?.isDevelopment()) {
-        console.log('✓ Form reset');
-      }
     }
   },
 

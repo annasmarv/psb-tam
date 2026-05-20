@@ -24,10 +24,6 @@ const Storage = {
       localStorage.setItem(this.key, jsonData);
       localStorage.setItem(this.lastSaveKey, new Date().toISOString());
 
-      if (Config?.isDevelopment()) {
-        console.log('✓ Data saved to localStorage:', Object.keys(data).length, 'fields');
-      }
-
       return true;
     } catch (error) {
       console.error('❌ Failed to save to localStorage:', error);
@@ -50,21 +46,11 @@ const Storage = {
       const data = localStorage.getItem(this.key);
 
       if (!data) {
-        if (Config?.isDevelopment()) {
-          console.log('No saved data found in localStorage');
-        }
         return null;
       }
 
       const parsed = JSON.parse(data);
       const lastSave = localStorage.getItem(this.lastSaveKey);
-
-      if (Config?.isDevelopment()) {
-        console.log('✓ Data loaded from localStorage:', Object.keys(parsed).length, 'fields');
-        if (lastSave) {
-          console.log('Last saved:', new Date(lastSave).toLocaleString('id-ID'));
-        }
-      }
 
       return parsed;
     } catch (error) {
@@ -81,10 +67,6 @@ const Storage = {
     try {
       localStorage.removeItem(this.key);
       localStorage.removeItem(this.lastSaveKey);
-
-      if (Config?.isDevelopment()) {
-        console.log('✓ localStorage cleared');
-      }
 
       return true;
     } catch (error) {
@@ -144,7 +126,6 @@ const Storage = {
    * Handle storage quota exceeded
    */
   handleQuotaExceeded() {
-    console.warn('⚠️ LocalStorage quota exceeded!');
 
     // Try to show user-friendly message
     if (typeof showNotification === 'function') {
@@ -168,13 +149,12 @@ const Storage = {
       localStorage.removeItem(test);
       return true;
     } catch (error) {
-      console.warn('⚠️ localStorage not available:', error.message);
       return false;
     }
   },
 
   /**
-   * Get all storage info
+   * Check if localStorage is available
    * @returns {Object}
    */
   getInfo() {
@@ -197,7 +177,6 @@ const Storage = {
       const data = this.load();
 
       if (!data) {
-        console.warn('No data to export');
         return false;
       }
 
@@ -212,7 +191,7 @@ const Storage = {
 
       URL.revokeObjectURL(url);
 
-      console.log('✓ Data exported successfully');
+
       return true;
     } catch (error) {
       console.error('❌ Failed to export data:', error);
@@ -234,7 +213,7 @@ const Storage = {
       const success = this.save(data);
 
       if (success) {
-        console.log('✓ Data imported successfully');
+
       }
 
       return success;
@@ -249,17 +228,8 @@ const Storage = {
    */
   debug() {
     if (!Config?.isDevelopment()) {
-      console.warn('Debug mode only available in development');
       return;
     }
-
-    console.group('🔍 LocalStorage Debug Info');
-    console.log('Key:', this.key);
-    console.log('Data:', this.load());
-    console.log('Size:', this.getSizeFormatted());
-    console.log('Last Save:', this.getLastSaveTime());
-    console.log('Available:', this.isAvailable());
-    console.groupEnd();
   }
 };
 

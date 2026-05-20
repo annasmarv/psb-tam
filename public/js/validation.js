@@ -498,10 +498,6 @@ const Validation = {
         this.setupNumericOnly(field, 13);
       }
     });
-
-    if (Config?.isDevelopment()) {
-      console.log('✓ Validation initialized for', fields.length, 'fields');
-    }
   }
 };
 

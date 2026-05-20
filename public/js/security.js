@@ -138,7 +138,6 @@
       ...details,
     };
 
-    console.log("[SECURITY EVENT]", event);
     return event;
   }
 
